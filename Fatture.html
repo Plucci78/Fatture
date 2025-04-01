@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Generatore Fatture</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --secondary-color: #f39c12;
+            --accent-color: #27ae60;
+            --background-light: #f8f9fa;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body { 
+            padding-bottom: 5rem; 
+            background-color: var(--background-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        main { 
+            max-width: 1024px; 
+            margin: 2rem auto; 
+            padding: 0; 
+            background-color: white; 
+            border-radius: var(--border-radius); 
+            box-shadow: var(--box-shadow);
+        }
+        
+        article { 
+            margin: 0; 
+            padding: 2rem; 
+            border-bottom: 1px solid #e0e0e0; 
+        }
+        
+        article:last-of-type { 
+            border-bottom: none; 
+        }
+        
+        hgroup { 
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+        
+        hgroup h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.2rem;
+        }
+        
+        .icon-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .icon-header i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        select, input[type="date"] {
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input[type="date"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+        
+        /* Stili per l'anteprima fattura */
+        #invoicePreview { 
+            margin-top: 2rem; 
+            padding: 2rem; 
+            border: 1px solid #e0e0e0; 
+            background-color: white; 
+            display: none; 
+            border-radius: var(--border-radius);
+        }
+        
+        #invoicePreview h2, #invoicePreview h3, #invoicePreview h4 { 
+            color: var(--primary-color); 
+            margin-bottom: 0.5em; 
+            margin-top: 1.2em; 
+        }
+        
+        #invoicePreview h4 { 
+            font-size: 1.1em; 
+            border-bottom: 2px solid var(--secondary-color); 
+            padding-bottom: 0.5em; 
+            margin-bottom: 1em;
+            display: inline-block;
+        }
+        
+        #invoicePreview table { 
+            width: 100%;
+            margin-top: 1rem; 
+            margin-bottom: 1.5rem;
+            border-collapse: collapse;
+        }
+        
+        #invoicePreview table th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem;
+            text-align: left;
+        }
+        
+        #invoicePreview table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        #invoicePreview table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        #invoicePreview table tr:last-child {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        
+        #invoicePreview footer { 
+            margin-top: 2rem; 
+            padding-top: 1rem; 
+            border-top: 1px dashed #ddd; 
+            font-size: 0.9em; 
+            color: #666; 
+        }
+        
+        #invoiceHeader { 
+            margin-bottom: 2rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 3px solid var(--primary-color); 
+            text-align: center; 
+            color: var(--primary-color);
+        }
+        
+        #invoiceHeader h2 { 
+            margin-bottom: 0.2em; 
+            font-size: 2rem;
+        }
+        
+        .invoice-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .invoice-details-box {
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--secondary-color);
+        }
+        
+        .payment-method {
+            background-color: #f0f9ff;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .payment-method-icon {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        #printButton { 
+            display: none; 
+            margin: 1rem 2rem; 
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .status { 
+            margin-top: 1rem; 
+            font-weight: bold; 
+            padding: 0.8rem 1rem; 
+            border-radius: var(--border-radius); 
+            display: block; 
+            text-align: center;
+        }
+        
+        .error { 
+            color: #721c24; 
+            background-color: #f8d7da; 
+            border: 1px solid #f5c6cb; 
+        }
+        
+        .success { 
+            color: #155724; 
+            background-color: #d4edda; 
+            border: 1px solid #c3e6cb;
+        }
+        
+        .loading { 
+            color: #004085; 
+            background-color: #cce5ff; 
+            border: 1px solid #b8daff;
+        }
+        
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 1rem; 
+            align-items: end; 
+        }
+        
+        /* Stili per la stampa */
+        @media print {
+            body { 
+                background-color: white; 
+                padding: 0; 
+                margin: 0; 
+            }
+            
+            main { 
+                max-width: none; 
+                margin: 0; 
+                padding: 0; 
+                box-shadow: none; 
+            }
+            
+            article, div:not(#invoicePreview) { 
+                display: none; 
+            }
+            
+            #invoicePreview { 
+                display: block !important; 
+                margin: 0; 
+                padding: 1cm; 
+                border: none; 
+            }
+            
+            #printButton { 
+                display: none !important; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <article id="generatorSection">
+            <hgroup>
+                <div class="icon-header">
+                    <i class="fas fa-file-invoice"></i>
+                    <h2>Genera Nuova Fattura</h2>
+                </div>
+                <p>Seleziona il condominio, l'appartamento e la data di fine periodo.</p>
+            </hgroup>
+            <form id="generationForm">
+                <div class="form-grid">
+                    <label for="condominioSelect">
+                        <i class="fas fa-building"></i> Condominio
+                        <select id="condominioSelect" required>
+                            <option value="">Caricamento...</option>
+                        </select>
+                    </label>
+                    <label for="appartamentoSelect">
+                        <i class="fas fa-home"></i> Appartamento
+                        <select id="appartamentoSelect" required disabled>
+                            <option value="">--- Seleziona Condominio ---</option>
+                        </select>
+                    </label>
+                    <label for="dataFine">
+                        <i class="fas fa-calendar-alt"></i> Data Fine Periodo
+                        <input type="date" id="dataFine" required>
+                    </label>
+                    <label for="metodoPagamento">
+                        <i class="fas fa-credit-card"></i> Metodo di Pagamento
+                        <select id="metodoPagamento" required>
+                            <option value="">--- Seleziona Metodo ---</option>
+                            <option value="Bonifico">Bonifico Bancario</option>
+                            <option value="Contanti">Contanti</option>
+                            <option value="CartaCredito">Carta di Credito</option>
+                            <option value="CartaDebito">Carta di Debito</option>
+                            <option value="Assegno">Assegno</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Altro">Altro</option>
+                        </select>
+                    </label>
+                </div>
+                <button type="button" id="generateButton" style="margin-top: 1rem;">
+                    <i class="fas fa-file-invoice"></i> Genera Fattura
+                </button>
+            </form>
+            <div id="statusMessage" class="status" style="display: none;"></div>
+        </article>
+
+        <div style="padding: 0 2rem 1rem 2rem; text-align: center;">
+            <button id="printButton" style="display: none;">
+                <i class="fas fa-print"></i> Stampa Fattura
+            </button>
+        </div>
+
+        <div id="invoicePreview">
+            <p><i>Caricamento anteprima...</i></p>
+        </div>
+    </main>
+
+    <script>
+    // ========================================================================
+    //                      JAVASCRIPT FRONTEND (Logica con Filtri)
+    // ========================================================================
+
+    // --- Variabili Globali ---
+    let allAppartamentiData = []; // Memorizza tutti gli appartamenti caricati all'inizio
+    let impostazioniGlobali = {}; // Per memorizzare le impostazioni caricate
+    
+    // Attendi che il documento sia completamente caricato
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Caricato. Inizializzazione dell'app...");
+        
+        // --- Riferimenti Elementi DOM ---
+        const condominioSelect = document.getElementById('condominioSelect');
+        const appartamentoSelect = document.getElementById('appartamentoSelect');
+        const dataFineInput = document.getElementById('dataFine');
+        const metodoPagamentoSelect = document.getElementById('metodoPagamento');
+        const generateButton = document.getElementById('generateButton');
+        const printButton = document.getElementById('printButton');
+        const statusMessageDiv = document.getElementById('statusMessage');
+        const invoicePreviewDiv = document.getElementById('invoicePreview');
+        
+        // --- Inizializzazione Event Listeners ---
+        // Aggiungi event listener per il cambio di condominio
+        condominioSelect.addEventListener('change', function() {
+            handleCondominioChange();
+        });
+        
+        // Aggiungi event listener per il pulsante genera
+        generateButton.addEventListener('click', function() {
+            generaFattura();
+        });
+        
+        // Aggiungi event listener per il pulsante stampa
+        printButton.addEventListener('click', function() {
+            window.print();
+        });
+        
+        // --- Inizializzazione ---
+        // Imposta data default (oggi)
+        dataFineInput.valueAsDate = new Date();
+        
+        // Carica dati iniziali
+        caricaDatiIniziali();
+        
+        // --- Funzioni principali ---
+        
+        /**
+         * Carica tutti i dati necessari all'inizializzazione
+         */
+        function caricaDatiIniziali() {
+            console.log("Avvio caricamento dati iniziali...");
+            
+            // 1. Carica l'elenco dei Condomini
+            google.script.run
+                .withSuccessHandler(function(condominiList) {
+                    console.log("Condomini ricevuti:", condominiList);
+                    setupCondominiDropdown(condominiList);
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Errore caricamento condomini:", error);
+                    gestisciErroreGenerale(error);
+                })
+                .getCondominiList();
+            
+            // 2. Carica TUTTI i dati degli appartamenti e memorizzali
+            google.script.run
+                .withSuccessHandler(function(appartamentiData) {
+                    console.log("Dati appartamenti ricevuti:", appartamentiData);
+                    storeAllApartmentData(appartamentiData);
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Errore caricamento appartamenti:", error);
+                    gestisciErroreGenerale(error);
+                })
+                .getAppartamentiData();
+                
+            // 3. Carica anche le impostazioni globali
+            google.script.run
+                .withSuccessHandler(function(settings) {
+                    console.log("Impostazioni ricevute");
+                    storeSettings(settings);
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Errore caricamento impostazioni:", error);
+                    gestisciErroreGenerale(error);
+                })
+                .leggiImpostazioniComplete();
+        }
+        
+        /**
+         * Gestisce il cambio di selezione del condominio
+         */
+        function handleCondominioChange() {
+            const selectedCondominioId = condominioSelect.value;
+            console.log("Condominio selezionato:", selectedCondominioId);
+            
+            // Nascondi messaggi precedenti
+            hideStatus();
+            
+            // Filtra gli appartamenti per il condominio selezionato
+            let filteredAppartamenti = [];
+            if (selectedCondominioId && allAppartamentiData.length > 0) {
+                filteredAppartamenti = allAppartamentiData.filter(app => 
+                    String(app.condominioId) === String(selectedCondominioId)
+                );
+            }
+            
+            // Popola il secondo dropdown con gli appartamenti filtrati
+            popolaDropdownAppartamenti(filteredAppartamenti);
+            
+            // Abilita/Disabilita il dropdown appartamenti
+            appartamentoSelect.disabled = !selectedCondominioId;
+            
+            // Feedback se non ci sono appartamenti nel condominio selezionato
+            if (selectedCondominioId && filteredAppartamenti.length === 0) {
+                displayStatus(`Nessun appartamento trovato per il condominio "${selectedCondominioId}"`, "error");
+            }
+        }
+        
+        /**
+         * Gestisce la generazione della fattura
+         */
+        function generaFattura() {
+            const idAppartamentoSelezionato = appartamentoSelect.value;
+            const dataFine = dataFineInput.value;
+            const idCondominioSelezionato = condominioSelect.value;
+            const metodoPagamento = metodoPagamentoSelect.value;
+            
+            // Validazione input
+            if (!idCondominioSelezionato) { 
+                displayStatus("Errore: Seleziona prima un Condominio.", "error"); 
+                return; 
+            }
+            if (!idAppartamentoSelezionato) { 
+                displayStatus("Errore: Seleziona un Appartamento.", "error"); 
+                return; 
+            }
+            if (!dataFine) { 
+                displayStatus("Errore: Seleziona una Data Fine Periodo.", "error"); 
+                return; 
+            }
+            if (!metodoPagamento) { 
+                displayStatus("Errore: Seleziona un Metodo di Pagamento.", "error"); 
+                return; 
+            }
+            
+            console.log(`Tentativo generazione fattura per App ID: ${idAppartamentoSelezionato} fino al ${dataFine}, pagamento: ${metodoPagamento}`);
+            displayStatus("Generazione fattura in corso...", "loading");
+            
+            // Imposta stato di caricamento
+            generateButton.setAttribute('aria-busy', 'true');
+            generateButton.disabled = true;
+            
+            // Nascondi anteprima esistente
+            printButton.style.display = 'none';
+            invoicePreviewDiv.style.display = 'none';
+            
+            // Chiama la funzione backend
+            google.script.run
+                .withSuccessHandler(function(risultato) {
+                    gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento);
+                })
+                .withFailureHandler(function(error) {
+                    gestisciErroreGenerale(error);
+                })
+                .generaERegistraFattura(idAppartamentoSelezionato, dataFine, metodoPagamento);
+        }
+        
+        // --- Funzioni di supporto ---
+        
+        /**
+         * Memorizza le impostazioni globali
+         */
+        function storeSettings(settings) {
+            console.log("Impostazioni ricevute:", settings);
+            
+            if (settings && settings.error) {
+                // Mostra l'errore all'utente
+                displayStatus(`Errore: ${settings.error}`, "error");
+            }
+            
+            impostazioniGlobali = settings || {};
+        }
+        
+        /**
+         * Popola il dropdown dei Condomini
+         */
+        function setupCondominiDropdown(condominiIds) {
+            console.log("Configurazione dropdown condomini...");
+            
+            // Reset del dropdown
+            condominioSelect.innerHTML = '';
+            
+            if (condominiIds && condominiIds.length > 0) {
+                // Aggiungi l'opzione default
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = "--- Seleziona Condominio ---";
+                condominioSelect.appendChild(defaultOption);
+                
+                // Aggiungi le opzioni dei condomini
+                condominiIds.forEach(id => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = id;
+                    condominioSelect.appendChild(option);
+                });
+                console.log(`Popolati ${condominiIds.length} condomini`);
+            } else {
+                // Nessun condominio trovato
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Nessun condominio trovato";
+                condominioSelect.appendChild(option);
+                
+                // Mostra un messaggio di errore
+                displayStatus("Nessun condominio trovato nel foglio 'Appartamenti'. Verifica di aver configurato correttamente il foglio di calcolo.", "error");
+            }
+        }
+        
+        /**
+         * Memorizza i dati di tutti gli appartamenti
+         */
+        function storeAllApartmentData(data) {
+            allAppartamentiData = data || [];
+            console.log(`Memorizzati ${allAppartamentiData.length} appartamenti in totale`);
+        }
+        
+        /**
+         * Popola il dropdown degli Appartamenti con i dati filtrati
+         */
+        function popolaDropdownAppartamenti(appartamenti) {
+            console.log("Popolamento dropdown appartamenti...");
+            
+            // Pulisci opzioni precedenti e imposta placeholder
+            appartamentoSelect.innerHTML = '<option value="">--- Seleziona Appartamento ---</option>';
+            
+            if (appartamenti && appartamenti.length > 0) {
+                // Ordina per nome display
+                appartamenti.sort((a, b) => String(a.nome).localeCompare(String(b.nome)));
+                
+                appartamenti.forEach(app => {
+                    const option = document.createElement('option');
+                    option.value = app.id;
+                    option.textContent = app.nome;
+                    appartamentoSelect.appendChild(option);
+                });
+                console.log(`Popolati ${appartamenti.length} appartamenti nel dropdown`);
+            }
+        }
+        
+        /**
+         * Gestisce il risultato della generazione fattura
+         */
+        function gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento) {
+            // Ripristina stato bottone
+            generateButton.removeAttribute('aria-busy');
+            generateButton.disabled = false;
+            
+            if (!risultato || risultato.error) {
+                // Gestione errori
+                displayStatus(risultato?.error || "Errore sconosciuto nella generazione della fattura.", "error");
+                return;
+            }
+            
+            // Aggiungi il metodo di pagamento ai risultati
+            risultato.metodoPagamento = metodoPagamento;
+            
+            // Successo
+            displayStatus(`Fattura ${risultato.id} generata con successo!`, "success");
+            console.log("Fattura generata:", risultato);
+            
+            // Popola e visualizza anteprima
+            popolaAnteprimaFattura(risultato);
+        }
+        
+        /**
+         * Restituisce l'icona appropriata per il metodo di pagamento
+         */
+        function getPaymentMethodIcon(method) {
+            switch(method) {
+                case 'Bonifico': return 'fa-university';
+                case 'Contanti': return 'fa-money-bill-wave';
+                case 'CartaCredito': return 'fa-credit-card';
+                case 'CartaDebito': return 'fa-credit-card';
+                case 'Assegno': return 'fa-money-check';
+                case 'PayPal': return 'fa-paypal';
+                default: return 'fa-credit-card';
+            }
+        }
+        
+        /**
+         * Popola l'anteprima della fattura
+         */
+        function popolaAnteprimaFattura(dati) {
+            if (!dati) {
+                console.error("Dati fattura vuoti o non validi");
+                return;
+            }
+            
+            console.log("Popolamento anteprima fattura...");
+            
+            // Mostro l'anteprima e bottone stampa
+            invoicePreviewDiv.style.display = 'block';
+            printButton.style.display = 'block';
+            
+            // Formatta le date in formato italiano
+            const formatDate = (dateStr) => {
+                if (!dateStr) return "N/D";
+                const dateParts = dateStr.split('-');
+                if (dateParts.length === 3) {
+                    return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                }
+                return dateStr;
+            };
+            
+            // Preparazione dati formattati per la visualizzazione
+            const formattedData = {
+                id: dati.id || "N/D",
+                intestatario: dati.intestatario || "N/D",
+                indirizzo: dati.indirizzo || "N/D",
+                cfPiva: dati.cfPiva || "N/D",
+                dataInizio: formatDate(dati.dataInizio),
+                dataFine: formatDate(dati.dataFine),
+                dataEmissione: formatDate(dati.dataEmissione),
+                dataScadenza: formatDate(dati.dataScadenza),
+                consumoElettrico: (dati.consumoElettrico !== undefined ? dati.consumoElettrico.toLocaleString('it-IT') : "0") + " kWh",
+                importoElettrico: (dati.importoElettrico !== undefined ? dati.importoElettrico.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                consumoAcqua: (dati.consumoAcqua !== undefined ? dati.consumoAcqua.toLocaleString('it-IT') : "0") + " m³",
+                importoAcqua: (dati.importoAcqua !== undefined ? dati.importoAcqua.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                consumoGas: (dati.consumoGas !== undefined ? dati.consumoGas.toLocaleString('it-IT') : "0") + " m³",
+                importoGas: (dati.importoGas !== undefined ? dati.importoGas.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                importoTotale: (dati.importoTotale !== undefined ? dati.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                stato: dati.stato || "Non Definito",
+                metodoPagamento: dati.metodoPagamento || "Non specificato",
+                aziendaInfo: dati.aziendaInfo || {},
+            };
+            
+            // Icona per il metodo di pagamento
+            const paymentIcon = getPaymentMethodIcon(formattedData.metodoPagamento);
+            
+            // Template HTML per l'anteprima della fattura
+            const invoiceHtml = `
+                <div id="invoiceHeader">
+                    <h2><i class="fas fa-file-invoice"></i> FATTURA ${formattedData.id}</h2>
+                    <p>${formattedData.aziendaInfo.nome || ""}<br>
+                    ${formattedData.aziendaInfo.indirizzo || ""}<br>
+                    P.IVA/CF: ${formattedData.aziendaInfo.pivaCf || ""}</p>
+                </div>
+                
+                <div class="invoice-details">
+                    <div class="invoice-details-box">
+                        <h4><i class="fas fa-user"></i> Intestatario</h4>
+                        <p><strong>${formattedData.intestatario}</strong><br>
+                        ${formattedData.indirizzo}<br>
+                        CF/P.IVA: ${formattedData.cfPiva}</p>
+                    </div>
+                    <div class="invoice-details-box">
+                        <h4><i class="fas fa-info-circle"></i> Dettagli Fattura</h4>
+                        <p>
+                        <strong>Stato:</strong> ${formattedData.stato}<br>
+                        <strong>Data Emissione:</strong> ${formattedData.dataEmissione}<br>
+                        <strong>Data Scadenza:</strong> ${formattedData.dataScadenza}<br>
+                        <strong>Periodo:</strong> ${formattedData.dataInizio} - ${formattedData.dataFine}</p>
+                    </div>
+                </div>
+                
+                <div class="payment-method">
+                    <h4><i class="fas fa-credit-card"></i> Metodo di Pagamento</h4>
+                    <p><i class="fas ${paymentIcon} payment-method-icon"></i> <strong>${formattedData.metodoPagamento}</strong></p>
+                </div>
+                
+                <h4><i class="fas fa-shopping-cart"></i> Consumi e Importi</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Servizio</th>
+                            <th>Consumo</th>
+                            <th>Importo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-bolt"></i> Energia Elettrica</td>
+                            <td>${formattedData.consumoElettrico}</td>
+                            <td>${formattedData.importoElettrico}</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-tint"></i> Acqua</td>
+                            <td>${formattedData.consumoAcqua}</td>
+                            <td>${formattedData.importoAcqua}</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-fire"></i> Gas</td>
+                            <td>${formattedData.consumoGas}</td>
+                            <td>${formattedData.importoGas}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><strong>TOTALE</strong></td>
+                            <td><strong>${formattedData.importoTotale}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 2rem;">
+                    <h4><i class="fas fa-money-check-alt"></i> Modalità di<!DOCTYPE html>
+<html lang="it">
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Generatore Fatture</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --secondary-color: #f39c12;
+            --accent-color: #27ae60;
+            --background-light: #f8f9fa;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body { 
+            padding-bottom: 5rem; 
+            background-color: var(--background-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        main { 
+            max-width: 1024px; 
+            margin: 2rem auto; 
+            padding: 0; 
+            background-color: white; 
+            border-radius: var(--border-radius); 
+            box-shadow: var(--box-shadow);
+        }
+        
+        article { 
+            margin: 0; 
+            padding: 2rem; 
+            border-bottom: 1px solid #e0e0e0; 
+        }
+        
+        article:last-of-type { 
+            border-bottom: none; 
+        }
+        
+        hgroup { 
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+        
+        hgroup h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.2rem;
+        }
+        
+        .icon-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .icon-header i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        select, input[type="date"] {
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input[type="date"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+        
+        /* Stili per l'anteprima fattura */
+        #invoicePreview { 
+            margin-top: 2rem; 
+            padding: 2rem; 
+            border: 1px solid #e0e0e0; 
+            background-color: white; 
+            display: none; 
+            border-radius: var(--border-radius);
+        }
+        
+        #invoicePreview h2, #invoicePreview h3, #invoicePreview h4 { 
+            color: var(--primary-color); 
+            margin-bottom: 0.5em; 
+            margin-top: 1.2em; 
+        }
+        
+        #invoicePreview h4 { 
+            font-size: 1.1em; 
+            border-bottom: 2px solid var(--secondary-color); 
+            padding-bottom: 0.5em; 
+            margin-bottom: 1em;
+            display: inline-block;
+        }
+        
+        #invoicePreview table { 
+            width: 100%;
+            margin-top: 1rem; 
+            margin-bottom: 1.5rem;
+            border-collapse: collapse;
+        }
+        
+        #invoicePreview table th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem;
+            text-align: left;
+        }
+        
+        #invoicePreview table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        #invoicePreview table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        #invoicePreview table tr:last-child {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        
+        #invoicePreview footer { 
+            margin-top: 2rem; 
+            padding-top: 1rem; 
+            border-top: 1px dashed #ddd; 
+            font-size: 0.9em; 
+            color: #666; 
+        }
+        
+        #invoiceHeader { 
+            margin-bottom: 2rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 3px solid var(--primary-color); 
+            text-align: center; 
+            color: var(--primary-color);
+        }
+        
+        #invoiceHeader h2 { 
+            margin-bottom: 0.2em; 
+            font-size: 2rem;
+        }
+        
+        .invoice-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .invoice-details-box {
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--secondary-color);
+        }
+        
+        .payment-method {
+            background-color: #f0f9ff;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .payment-method-icon {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        #printButton { 
+            display: none; 
+            margin: 1rem 2rem; 
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .status { 
+            margin-top: 1rem; 
+            font-weight: bold; 
+            padding: 0.8rem 1rem; 
+            border-radius: var(--border-radius); 
+            display: block; 
+            text-align: center;
+        }
+        
+        .error { 
+            color: #721c24; 
+            background-color: #f8d7da; 
+            border: 1px solid #f5c6cb; 
+        }
+        
+        .success { 
+            color: #155724; 
+            background-color: #d4edda; 
+            border: 1px solid #c3e6cb;
+        }
+        
+        .loading { 
+            color: #004085; 
+            background-color: #cce5ff; 
+            border: 1px solid #b8daff;
+        }
+        
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 1rem; 
+            align-items: end; 
+        }
+        
+        /* Stili per la stampa */
+        @media print {
+            body { 
+                background-color: white; 
+                padding: 0; 
+                margin: 0; 
+            }
+            
+            main { 
+                max-width: none; 
+                margin: 0; 
+                padding: 0; 
+                box-shadow: none; 
+            }
+            
+            article, div:not(#invoicePreview) { 
+                display: none; 
+            }
+            
+            #invoicePreview { 
+                display: block !important; 
+                margin: 0; 
+                padding: 1cm; 
+                border: none; 
+            }
+            
+            #printButton { 
+                display: none !important; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <article id="generatorSection">
+            <hgroup>
+                <div class="icon-header">
+                    <i class="fas fa-file-invoice"></i>
+                    <h2>Genera Nuova Fattura</h2>
+                </div>
+                <p>Seleziona il condominio, l'appartamento e la data di fine periodo.</p>
+            </hgroup>
+            <form id="generationForm">
+                <div class="form-grid">
+                    <label for="condominioSelect">
+                        <i class="fas fa-building"></i> Condominio
+                        <select id="condominioSelect" required>
+                            <option value="">Caricamento...</option>
+                        </select>
+                    </label>
+                    <label for="appartamentoSelect">
+                        <i class="fas fa-home"></i> Appartamento
+                        <select id="appartamentoSelect" required disabled>
+                            <option value="">--- Seleziona Condominio ---</option>
+                        </select>
+                    </label>
+                    <label for="dataFine">
+                        <i class="fas fa-calendar-alt"></i> Data Fine Periodo
+                        <input type="date" id="dataFine" required>
+                    </label>
+                    <label for="metodoPagamento">
+                        <i class="fas fa-credit-card"></i> Metodo di Pagamento
+                        <select id="metodoPagamento" required>
+                            <option value="">--- Seleziona Metodo ---</option>
+                            <option value="Bonifico">Bonifico Bancario</option>
+                            <option value="Contanti">Contanti</option>
+                            <option value="CartaCredito">Carta di Credito</option>
+                            <option value="CartaDebito">Carta di Debito</option>
+                            <option value="Assegno">Assegno</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Altro">Altro</option>
+                        </select>
+                    </label>
+                </div>
+                <button type="button" id="generateButton" style="margin-top: 1rem;">
+                    <i class="fas fa-file-invoice"></i> Genera Fattura
+                </button>
+            </form>
+            <div id="statusMessage" class="status" style="display: none;"></div>
+        </article>
+
+        <div style="padding: 0 2rem 1rem 2rem; text-align: center;">
+            <button id="printButton" style="display: none;">
+                <i class="fas fa-print"></i> Stampa Fattura
+            </button>
+        </div>
+
+        <div id="invoicePreview">
+            <p><i>Caricamento anteprima...</i></p>
+        </div>
+    </main>
+
+    <script>
+    // ========================================================================
+    //                      JAVASCRIPT FRONTEND (Logica con Filtri)
+    // ========================================================================
+
+    // --- Variabili Globali ---
+    let allAppartamentiData = []; // Memorizza tutti gli appartamenti caricati all'inizio
+    let impostazioniGlobali = {}; // Per memorizzare le impostazioni caricate
+    
+    // Attendi che il documento sia completamente caricato
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Caricato. Inizializzazione dell'app...");
+        
+        // --- Riferimenti Elementi DOM ---
+        const condominioSelect = document.getElementById('condominioSelect');
+        const appartamentoSelect = document.getElementById('appartamentoSelect');
+        const dataFineInput = document.getElementById('dataFine');
+        const metodoPagamentoSelect = document.getElementById('metodoPagamento');
+        const generateButton = document.getElementById('generateButton');
+        const printButton = document.getElementById('printButton');
+        const statusMessageDiv = document.getElementById('statusMessage');
+        const invoicePreviewDiv = document.getElementById('invoicePreview');
+        
+        // --- Inizializzazione Event Listeners ---
+        // Aggiungi event listener per il cambio di condominio
+        condominioSelect.addEventListener('change', function() {
+            handleCondominioChange();
+        });
+        
+        // Aggiungi event listener per il pulsante genera
+        generateButton.addEventListener('click', function() {
+            generaFattura();
+        });
+        
+        // Aggiungi event listener per il pulsante stampa
+        printButton.addEventListener('click', function() {
+            window.print();
+        });
+        
+        // --- Inizializzazione ---
+        // Imposta data default (oggi)
+        dataFineInput.valueAsDate = new Date();
+        
+        // Carica dati iniziali
+        caricaDatiIniziali();
+        
+        // --- Funzioni principali ---
+        
+        /**
+         * Carica tutti i dati necessari all'inizializzazione
+         */
+        function caricaDatiIniziali() {
+            console.log("Avvio caricamento dati iniziali...");
+            
+            // 1. Carica l'elenco dei Condomini
+            google.script.run
+                .withSuccessHandler(function(condominiList) {
+                    console.log("Condomini ricevuti:", condominiList);
+                    setupCondominiDropdown(condominiList);
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Errore caricamento condomini:", error);
+                    gestisciErroreGenerale(error);
+                })
+                .getCondominiList();
+            
+            // 2. Carica TUTTI i dati degli appartamenti e memorizzali
+            google.script.run
+                .withSuccessHandler(function(appartamentiData) {
+                    console.log("Dati appartamenti ricevuti:", appartamentiData);
+                    storeAllApartmentData(appartamentiData);
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Errore caricamento appartamenti:", error);
+                    gestisciErroreGenerale(error);
+                })
+                .getAppartamentiData();
+                
+            // 3. Carica anche le impostazioni globali
+            google.script.run
+                .withSuccessHandler(function(settings) {
+                    console.log("Impostazioni ricevute");
+                    storeSettings(settings);
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Errore caricamento impostazioni:", error);
+                    gestisciErroreGenerale(error);
+                })
+                .leggiImpostazioniComplete();
+        }
+        
+        /**
+         * Gestisce il cambio di selezione del condominio
+         */
+        function handleCondominioChange() {
+            const selectedCondominioId = condominioSelect.value;
+            console.log("Condominio selezionato:", selectedCondominioId);
+            
+            // Nascondi messaggi precedenti
+            hideStatus();
+            
+            // Filtra gli appartamenti per il condominio selezionato
+            let filteredAppartamenti = [];
+            if (selectedCondominioId && allAppartamentiData.length > 0) {
+                filteredAppartamenti = allAppartamentiData.filter(app => 
+                    String(app.condominioId) === String(selectedCondominioId)
+                );
+            }
+            
+            // Popola il secondo dropdown con gli appartamenti filtrati
+            popolaDropdownAppartamenti(filteredAppartamenti);
+            
+            // Abilita/Disabilita il dropdown appartamenti
+            appartamentoSelect.disabled = !selectedCondominioId;
+            
+            // Feedback se non ci sono appartamenti nel condominio selezionato
+            if (selectedCondominioId && filteredAppartamenti.length === 0) {
+                displayStatus(`Nessun appartamento trovato per il condominio "${selectedCondominioId}"`, "error");
+            }
+        }
+        
+        /**
+         * Gestisce la generazione della fattura
+         */
+        function generaFattura() {
+            const idAppartamentoSelezionato = appartamentoSelect.value;
+            const dataFine = dataFineInput.value;
+            const idCondominioSelezionato = condominioSelect.value;
+            const metodoPagamento = metodoPagamentoSelect.value;
+            
+            // Validazione input
+            if (!idCondominioSelezionato) { 
+                displayStatus("Errore: Seleziona prima un Condominio.", "error"); 
+                return; 
+            }
+            if (!idAppartamentoSelezionato) { 
+                displayStatus("Errore: Seleziona un Appartamento.", "error"); 
+                return; 
+            }
+            if (!dataFine) { 
+                displayStatus("Errore: Seleziona una Data Fine Periodo.", "error"); 
+                return; 
+            }
+            if (!metodoPagamento) { 
+                displayStatus("Errore: Seleziona un Metodo di Pagamento.", "error"); 
+                return; 
+            }
+            
+            console.log(`Tentativo generazione fattura per App ID: ${idAppartamentoSelezionato} fino al ${dataFine}, pagamento: ${metodoPagamento}`);
+            displayStatus("Generazione fattura in corso...", "loading");
+            
+            // Imposta stato di caricamento
+            generateButton.setAttribute('aria-busy', 'true');
+            generateButton.disabled = true;
+            
+            // Nascondi anteprima esistente
+            printButton.style.display = 'none';
+            invoicePreviewDiv.style.display = 'none';
+            
+            // Chiama la funzione backend
+            google.script.run
+                .withSuccessHandler(function(risultato) {
+                    gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento);
+                })
+                .withFailureHandler(function(error) {
+                    gestisciErroreGenerale(error);
+                })
+                .generaERegistraFattura(idAppartamentoSelezionato, dataFine, metodoPagamento);
+        }
+        
+        // --- Funzioni di supporto ---
+        
+        /**
+         * Memorizza le impostazioni globali
+         */
+        function storeSettings(settings) {
+            console.log("Impostazioni ricevute:", settings);
+            
+            if (settings && settings.error) {
+                // Mostra l'errore all'utente
+                displayStatus(`Errore: ${settings.error}`, "error");
+            }
+            
+            impostazioniGlobali = settings || {};
+        }
+        
+        /**
+         * Popola il dropdown dei Condomini
+         */
+        function setupCondominiDropdown(condominiIds) {
+            console.log("Configurazione dropdown condomini...");
+            
+            // Reset del dropdown
+            condominioSelect.innerHTML = '';
+            
+            if (condominiIds && condominiIds.length > 0) {
+                // Aggiungi l'opzione default
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = "--- Seleziona Condominio ---";
+                condominioSelect.appendChild(defaultOption);
+                
+                // Aggiungi le opzioni dei condomini
+                condominiIds.forEach(id => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = id;
+                    condominioSelect.appendChild(option);
+                });
+                console.log(`Popolati ${condominiIds.length} condomini`);
+            } else {
+                // Nessun condominio trovato
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Nessun condominio trovato";
+                condominioSelect.appendChild(option);
+                
+                // Mostra un messaggio di errore
+                displayStatus("Nessun condominio trovato nel foglio 'Appartamenti'. Verifica di aver configurato correttamente il foglio di calcolo.", "error");
+            }
+        }
+        
+        /**
+         * Memorizza i dati di tutti gli appartamenti
+         */
+        function storeAllApartmentData(data) {
+            allAppartamentiData = data || [];
+            console.log(`Memorizzati ${allAppartamentiData.length} appartamenti in totale`);
+        }
+        
+        /**
+         * Popola il dropdown degli Appartamenti con i dati filtrati
+         */
+        function popolaDropdownAppartamenti(appartamenti) {
+            console.log("Popolamento dropdown appartamenti...");
+            
+            // Pulisci opzioni precedenti e imposta placeholder
+            appartamentoSelect.innerHTML = '<option value="">--- Seleziona Appartamento ---</option>';
+            
+            if (appartamenti && appartamenti.length > 0) {
+                // Ordina per nome display
+                appartamenti.sort((a, b) => String(a.nome).localeCompare(String(b.nome)));
+                
+                appartamenti.forEach(app => {
+                    const option = document.createElement('option');
+                    option.value = app.id;
+                    option.textContent = app.nome;
+                    appartamentoSelect.appendChild(option);
+                });
+                console.log(`Popolati ${appartamenti.length} appartamenti nel dropdown`);
+            }
+        }
+        
+        /**
+         * Gestisce il risultato della generazione fattura
+         */
+        function gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento) {
+            // Ripristina stato bottone
+            generateButton.removeAttribute('aria-busy');
+            generateButton.disabled = false;
+            
+            if (!risultato || risultato.error) {
+                // Gestione errori
+                displayStatus(risultato?.error || "Errore sconosciuto nella generazione della fattura.", "error");
+                return;
+            }
+            
+            // Aggiungi il metodo di pagamento ai risultati
+            risultato.metodoPagamento = metodoPagamento;
+            
+            // Successo
+            displayStatus(`Fattura ${risultato.id} generata con successo!`, "success");
+            console.log("Fattura generata:", risultato);
+            
+            // Popola e visualizza anteprima
+            popolaAnteprimaFattura(risultato);
+        }
+        
+        /**
+         * Restituisce l'icona appropriata per il metodo di pagamento
+         */
+        function getPaymentMethodIcon(method) {
+            switch(method) {
+                case 'Bonifico': return 'fa-university';
+                case 'Contanti': return 'fa-money-bill-wave';
+                case 'CartaCredito': return 'fa-credit-card';
+                case 'CartaDebito': return 'fa-credit-card';
+                case 'Assegno': return 'fa-money-check';
+                case 'PayPal': return 'fa-paypal';
+                default: return 'fa-credit-card';
+            }
+        }
+        
+        /**
+         * Popola l'anteprima della fattura
+         */
+        function popolaAnteprimaFattura(dati) {
+            if (!dati) {
+                console.error("Dati fattura vuoti o non validi");
+                return;
+            }
+            
+            console.log("Popolamento anteprima fattura...");
+            
+            // Mostro l'anteprima e bottone stampa
+            invoicePreviewDiv.style.display = 'block';
+            printButton.style.display = 'block';
+            
+            // Formatta le date in formato italiano
+            const formatDate = (dateStr) => {
+                if (!dateStr) return "N/D";
+                const dateParts = dateStr.split('-');
+                if (dateParts.length === 3) {
+                    return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                }
+                return dateStr;
+            };
+            
+            // Preparazione dati formattati per la visualizzazione
+            const formattedData = {
+                id: dati.id || "N/D",
+                intestatario: dati.intestatario || "N/D",
+                indirizzo: dati.indirizzo || "N/D",
+                cfPiva: dati.cfPiva || "N/D",
+                dataInizio: formatDate(dati.dataInizio),
+                dataFine: formatDate(dati.dataFine),
+                dataEmissione: formatDate(dati.dataEmissione),
+                dataScadenza: formatDate(dati.dataScadenza),
+                consumoElettrico: (dati.consumoElettrico !== undefined ? dati.consumoElettrico.toLocaleString('it-IT') : "0") + " kWh",
+                importoElettrico: (dati.importoElettrico !== undefined ? dati.importoElettrico.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                consumoAcqua: (dati.consumoAcqua !== undefined ? dati.consumoAcqua.toLocaleString('it-IT') : "0") + " m³",
+                importoAcqua: (dati.importoAcqua !== undefined ? dati.importoAcqua.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                consumoGas: (dati.consumoGas !== undefined ? dati.consumoGas.toLocaleString('it-IT') : "0") + " m³",
+                importoGas: (dati.importoGas !== undefined ? dati.importoGas.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                importoTotale: (dati.importoTotale !== undefined ? dati.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
+                stato: dati.stato || "Non Definito",
+                metodoPagamento: dati.metodoPagamento || "Non specificato",
+                aziendaInfo: dati.aziendaInfo || {},
+            };
+            
+            // Icona per il metodo di pagamento
+            const paymentIcon = getPaymentMethodIcon(formattedData.metodoPagamento);
+            
+            // Template HTML per l'anteprima della fattura
+            const invoiceHtml = `
+                <div id="invoiceHeader">
+                    <h2><i class="fas fa-file-invoice"></i> FATTURA ${formattedData.id}</h2>
+                    <p>${formattedData.aziendaInfo.nome || ""}<br>
+                    ${formattedData.aziendaInfo.indirizzo || ""}<br>
+                    P.IVA/CF: ${formattedData.aziendaInfo.pivaCf || ""}</p>
+                </div>
+                
+                <div class="invoice-details">
+                    <div class="invoice-details-box">
+                        <h4><i class="fas fa-user"></i> Intestatario</h4>
+                        <p><strong>${formattedData.intestatario}</strong><br>
+                        ${formattedData.indirizzo}<br>
+                        CF/P.IVA: ${formattedData.cfPiva}</p>
+                    </div>
+                    <div class="invoice-details-box">
+                        <h4><i class="fas fa-info-circle"></i> Dettagli Fattura</h4>
+                        <p>
+                        <strong>Stato:</strong> ${formattedData.stato}<br>
+                        <strong>Data Emissione:</strong> ${formattedData.dataEmissione}<br>
+                        <strong>Data Scadenza:</strong> ${formattedData.dataScadenza}<br>
+                        <strong>Periodo:</strong> ${formattedData.dataInizio} - ${formattedData.dataFine}</p>
+                    </div>
+                </div>
+                
+                <div class="payment-method">
+                    <h4><i class="fas fa-credit-card"></i> Metodo di Pagamento</h4>
+                    <p><i class="fas ${paymentIcon} payment-method-icon"></i> <strong>${formattedData.metodoPagamento}</strong></p>
+                </div>
+                
+                <h4><i class="fas fa-shopping-cart"></i> Consumi e Importi</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Servizio</th>
+                            <th>Consumo</th>
+                            <th>Importo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-bolt"></i> Energia Elettrica</td>
+                            <td>${formattedData.consumoElettrico}</td>
+                            <td>${formattedData.importoElettrico}</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-tint"></i> Acqua</td>
+                            <td>${formattedData.consumoAcqua}</td>
+                            <td>${formattedData.importoAcqua}</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-fire"></i> Gas</td>
+                            <td>${formattedData.consumoGas}</td>
+                            <td>${formattedData.importoGas}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><strong>TOTALE</strong></td>
+                            <td><strong>${formattedData.importoTotale}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 2rem;">
+                    <h4><i class="fas fa-money-check-alt"></i> Modalità di Pagamento</h4>
+                    <p><strong>IBAN:</strong> ${formattedData.aziendaInfo.iban || "N/D"}<br>
+                    <strong>Intestato a:</strong> ${formattedData.aziendaInfo.nome || "N/D"}</p>
+                </div>
+                
+                <footer>
+                    <p><strong>Note:</strong> ${formattedData.aziendaInfo.note || ""}</p>
+                    <p><i class="fas fa-envelope"></i> Email: ${formattedData.aziendaInfo.email || ""} - <i class="fas fa-phone"></i> Tel: ${formattedData.aziendaInfo.telefono || ""}</p>
+                    <p style="text-align: center; margin-top: 1rem; font-size: 0.8em; color: #999;">
+                        <i class="fas fa-info-circle"></i> Documento generato automaticamente dal sistema di gestione condomini.
+                    </p>
+                </footer>
+            `;
+            
+            // Aggiorna contenuto dell'anteprima
+            invoicePreviewDiv.innerHTML = invoiceHtml;
+        }
+        
+        /**
+         * Mostra un messaggio di stato
+         */
+        function displayStatus(message, type) {
+            if (!message) {
+                hideStatus();
+                return;
+            }
+            
+            console.log(`Status message (${type}): ${message}`);
+            
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.style.display = 'block';
+            
+            // Rimuovi tutte le classi di stato
+            statusMessageDiv.classList.remove('error', 'success', 'loading');
+            
+            // Aggiungi la classe appropriata
+            if (type) {
+                statusMessageDiv.classList.add(type);
+            }
+        }
+        
+        /**
+         * Nasconde il messaggio di stato
+         */
+        function hideStatus() {
+            statusMessageDiv.style.display = 'none';
+        }
+        
+        /**
+         * Gestisce gli errori generali
+         */
+        function gestisciErroreGenerale(error) {
+            console.error("Errore:", error);
+            
+            // Ripristina stato bottone
+            generateButton.removeAttribute('aria-busy');
+            generateButton.disabled = false;
+            
+            displayStatus(error?.message || "Si è verificato un errore durante l'operazione.", "error");
+        }
+    });
+    </script>
+</body>
+</html>
