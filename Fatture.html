@@ -4,324 +4,835 @@
     <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Generatore Fatture</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Gestione Fatturazione Condomini</title>
+    
+    <!-- Font e CSS moderni -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --primary-color: #3498db;
-            --primary-hover: #2980b9;
-            --secondary-color: #f39c12;
-            --accent-color: #27ae60;
-            --background-light: #f8f9fa;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* Palette colori moderna */
+            --color-primary: #3a6df0;
+            --color-primary-light: #6e92f6;
+            --color-primary-dark: #2c56cf;
+            --color-secondary: #ff6b6b;
+            --color-accent: #00d084;
+            
+            --color-success: #2dd36f;
+            --color-warning: #ffc409;
+            --color-danger: #eb445a;
+            --color-info: #3dc2ff;
+            
+            --color-bg: #f9fafc;
+            --color-card: #ffffff;
+            --color-text: #1a2b4b;
+            --color-text-light: #6b7a99;
+            --color-border: #e4e8f3;
+            
+            --shadow-sm: 0 2px 8px rgba(0, 6, 39, 0.05);
+            --shadow-md: 0 4px 16px rgba(0, 6, 39, 0.1);
+            --shadow-lg: 0 8px 24px rgba(0, 6, 39, 0.12);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            
+            --transition: all 0.3s ease;
+            
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-xxl: 3rem;
         }
         
-        body { 
-            padding-bottom: 5rem; 
-            background-color: var(--background-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* Reset e base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        main { 
-            max-width: 1024px; 
-            margin: 2rem auto; 
-            padding: 0; 
-            background-color: white; 
-            border-radius: var(--border-radius); 
-            box-shadow: var(--box-shadow);
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            font-size: 16px;
+            font-weight: 400;
+            overflow-x: hidden;
+            padding-bottom: 5rem;
         }
         
-        article { 
-            margin: 0; 
-            padding: 2rem; 
-            border-bottom: 1px solid #e0e0e0; 
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
         }
         
-        article:last-of-type { 
-            border-bottom: none; 
+        h1 {
+            font-size: 2.25rem;
+            font-family: 'Playfair Display', serif;
         }
         
-        hgroup { 
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--primary-color);
-            padding-left: 1rem;
+        h2 {
+            font-size: 1.875rem;
+            font-family: 'Playfair Display', serif;
         }
         
-        hgroup h2 {
-            color: var(--primary-color);
-            margin-bottom: 0.2rem;
-        }
-        
-        .icon-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .icon-header i {
-            color: var(--primary-color);
+        h3 {
             font-size: 1.5rem;
         }
         
-        button {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            transition: all 0.3s ease;
+        p {
+            margin-bottom: var(--spacing-md);
         }
         
-        button:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
         }
         
-        button.secondary {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
+        .app-header {
+            background-color: var(--color-card);
+            padding: var(--spacing-lg) 0;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+            overflow: hidden;
         }
         
-        select, input[type="date"] {
-            border-radius: var(--border-radius);
-            border: 1px solid #ddd;
-            transition: all 0.3s ease;
-        }
-        
-        select:focus, input[type="date"]:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
-        }
-        
-        /* Stili per l'anteprima fattura */
-        #invoicePreview { 
-            margin-top: 2rem; 
-            padding: 2rem; 
-            border: 1px solid #e0e0e0; 
-            background-color: white; 
-            display: none; 
-            border-radius: var(--border-radius);
-        }
-        
-        #invoicePreview h2, #invoicePreview h3, #invoicePreview h4 { 
-            color: var(--primary-color); 
-            margin-bottom: 0.5em; 
-            margin-top: 1.2em; 
-        }
-        
-        #invoicePreview h4 { 
-            font-size: 1.1em; 
-            border-bottom: 2px solid var(--secondary-color); 
-            padding-bottom: 0.5em; 
-            margin-bottom: 1em;
-            display: inline-block;
-        }
-        
-        #invoicePreview table { 
+        .app-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin-top: 1rem; 
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+        }
+        
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .app-title i {
+            color: var(--color-primary);
+            font-size: 1.8rem;
+        }
+        
+        /* Card design */
+        .card {
+            background-color: var(--color-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-header-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: 0;
+        }
+        
+        .card-header-title i {
+            color: var(--color-primary);
+            font-size: 1.4rem;
+        }
+        
+        .card-body {
+            padding: var(--spacing-xl);
+        }
+        
+        /* Form elements */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--color-primary-light);
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(58, 109, 240, 0.15);
+        }
+        
+        .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 2.25rem 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            appearance: none;
+            transition: var(--transition);
+        }
+        
+        .form-select:focus {
+            border-color: var(--color-primary-light);
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(58, 109, 240, 0.15);
+        }
+        
+        /* Grid layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        
+        .col, .col-12, .col-md-6, .col-lg-4, .col-lg-8 {
+            position: relative;
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+        
+        .col-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        
+        @media (min-width: 768px) {
+            .col-md-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .col-lg-4 {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
+            }
+            .col-lg-8 {
+                flex: 0 0 66.666667%;
+                max-width: 66.666667%;
+            }
+        }
+        
+        /* Bottoni */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            gap: 0.5rem;
+        }
+        
+        .btn:focus, .btn:hover {
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            color: #fff;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-primary-dark);
+            border-color: var(--color-primary-dark);
+        }
+        
+        .btn-secondary {
+            color: #fff;
+            background-color: var(--color-secondary);
+            border-color: var(--color-secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e55c5c;
+            border-color: #e55c5c;
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-primary);
+            background-color: transparent;
+            border-color: var(--color-primary);
+        }
+        
+        .btn-outline-primary:hover {
+            color: #fff;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Badge e status */
+        .badge {
+            display: inline-block;
+            padding: 0.4em 0.65em;
+            font-size: 0.75em;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+        }
+        
+        .badge-success {
+            color: #fff;
+            background-color: var(--color-success);
+        }
+        
+        .badge-warning {
+            color: #212529;
+            background-color: var(--color-warning);
+        }
+        
+        .badge-danger {
+            color: #fff;
+            background-color: var(--color-danger);
+        }
+        
+        .badge-info {
+            color: #fff;
+            background-color: var(--color-info);
+        }
+        
+        /* Alert messages */
+        .alert {
+            position: relative;
+            padding: 1rem 1.25rem;
             margin-bottom: 1.5rem;
-            border-collapse: collapse;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
         }
         
-        #invoicePreview table th {
-            background-color: var(--primary-color);
+        .alert-success {
+            color: #0d5a3e;
+            background-color: #d8f7e9;
+            border-color: #baeed6;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        /* Fattura Preview Design */
+        .invoice-container {
+            margin-top: var(--spacing-xl);
+            background-color: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        
+        .invoice-header {
+            padding: var(--spacing-xl);
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
             color: white;
-            padding: 0.8rem;
-            text-align: left;
+            position: relative;
         }
         
-        #invoicePreview table td {
-            padding: 0.8rem;
-            border-bottom: 1px solid #eee;
+        .invoice-header::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background-color: white;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
         }
         
-        #invoicePreview table tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .invoice-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
         }
         
-        #invoicePreview table tr:last-child {
-            font-weight: bold;
-            background-color: #f0f0f0;
-        }
-        
-        #invoicePreview footer { 
-            margin-top: 2rem; 
-            padding-top: 1rem; 
-            border-top: 1px dashed #ddd; 
-            font-size: 0.9em; 
-            color: #666; 
-        }
-        
-        #invoiceHeader { 
-            margin-bottom: 2rem; 
-            padding-bottom: 1rem; 
-            border-bottom: 3px solid var(--primary-color); 
-            text-align: center; 
-            color: var(--primary-color);
-        }
-        
-        #invoiceHeader h2 { 
-            margin-bottom: 0.2em; 
+        .invoice-logo i {
             font-size: 2rem;
+        }
+        
+        .invoice-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .invoice-company {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .invoice-body {
+            padding: var(--spacing-xl);
         }
         
         .invoice-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
         }
         
         .invoice-details-box {
-            padding: 1.5rem;
-            background-color: #f8f9fa;
-            border-radius: var(--border-radius);
-            border-left: 3px solid var(--secondary-color);
+            background-color: #f9fafc;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--color-primary);
+        }
+        
+        .invoice-details-box h4 {
+            font-size: 1.1rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .invoice-table th {
+            background-color: #f9fafc;
+            color: var(--color-text);
+            text-align: left;
+            padding: var(--spacing-md);
+            font-weight: 600;
+            border-bottom: 2px solid var(--color-primary);
+        }
+        
+        .invoice-table td {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .invoice-table tr:last-child td {
+            border-bottom: none;
+            border-top: 2px solid var(--color-primary);
+            font-weight: 700;
+            background-color: #f9fafc;
+        }
+        
+        .invoice-table tr:nth-child(even) {
+            background-color: #f9fafc;
         }
         
         .payment-method {
-            background-color: #f0f9ff;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--primary-color);
+            padding: var(--spacing-lg);
+            background-color: #f9fafc;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-xl);
+            border-left: 4px solid var(--color-secondary);
         }
         
-        .payment-method-icon {
-            margin-right: 0.5rem;
-            color: var(--primary-color);
+        .payment-method h4 {
+            color: var(--color-secondary);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
         }
         
-        #printButton { 
-            display: none; 
-            margin: 1rem 2rem; 
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
+        .payment-method p {
+            margin-bottom: 0;
         }
         
-        .status { 
-            margin-top: 1rem; 
-            font-weight: bold; 
-            padding: 0.8rem 1rem; 
-            border-radius: var(--border-radius); 
-            display: block; 
+        .invoice-footer {
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px dashed var(--color-border);
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+        }
+        
+        /* QR Code */
+        .qr-code {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .qr-code-img {
+            width: 150px;
+            height: 150px;
+            margin-bottom: var(--spacing-sm);
+            background-color: #f9fafc;
+            border: 1px solid var(--color-border);
+            padding: var(--spacing-sm);
+            position: relative;
+        }
+        
+        .qr-code-img::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0id2hpdGUiPjwvcmVjdD48cmVjdCB4PSIyMCIgeT0iMjAiIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjQiPjwvcmVjdD48cGF0aCBkPSJNNDAgNDAgTDcwIDQwIEw3MCA3MCBMNDAgNzAgWiIgZmlsbD0iYmxhY2siPjwvcGF0aD48cGF0aCBkPSJNMTMwIDQwIEwxNjAgNDAgTDE2MCA3MCBMMTM" /TzcwIFoiIGZpbGw9ImJsYWNrIj48L3BhdGg+PHBhdGggZD0iTTQwIDEzMCBMNzAgMTMwIEw3MCAxNjAgTDQwIDE2MCBaIiBmaWxsPSJibGFjayI+PC9wYXRoPjxwYXRoIGQ9Ik00MCA4MCBMNTQ1I5MCBMODAgMTIwIEwxMjAgMTIwIEwxMjAgODAgWiIgZmlsbD0iYmxhY2siPjwvcGF0aD48L3N2Zz4=');
+            background-position: center;
+            background-repeat: no-repeat;
+            top: 0;
+            left: 0;
+        }
+        
+        .qr-code-text {
+            font-size: 0.85rem;
             text-align: center;
+            color: var(--color-text-light);
         }
         
-        .error { 
-            color: #721c24; 
-            background-color: #f8d7da; 
-            border: 1px solid #f5c6cb; 
-        }
-        
-        .success { 
-            color: #155724; 
-            background-color: #d4edda; 
-            border: 1px solid #c3e6cb;
-        }
-        
-        .loading { 
-            color: #004085; 
-            background-color: #cce5ff; 
-            border: 1px solid #b8daff;
-        }
-        
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-            gap: 1rem; 
-            align-items: end; 
-        }
-        
-        /* Stili per la stampa */
+        /* Stampa ottimizzata */
         @media print {
-            body { 
-                background-color: white; 
-                padding: 0; 
-                margin: 0; 
+            @page {
+                size: A4;
+                margin: 1cm;
             }
             
-            main { 
-                max-width: none; 
-                margin: 0; 
-                padding: 0; 
-                box-shadow: none; 
+            body {
+                background-color: white;
+                padding: 0;
+                margin: 0;
+                font-size: 12pt;
             }
             
-            article, div:not(#invoicePreview) { 
-                display: none; 
+            .container, .card, main, .invoice-container {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border-radius: 0;
             }
             
-            #invoicePreview { 
-                display: block !important; 
-                margin: 0; 
-                padding: 1cm; 
-                border: none; 
+            .app-header, form, .btn, #statusMessage, #generateButton {
+                display: none !important;
             }
             
-            #printButton { 
-                display: none !important; 
+            .invoice-header {
+                background: #3a6df0 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .invoice-header::after {
+                display: none;
+            }
+            
+            .invoice-details-box, .payment-method {
+                border-left: 4px solid #3a6df0 !important;
+                background-color: #f9fafc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .invoice-table th {
+                background-color: #f9fafc !important;
+                border-bottom: 2px solid #3a6df0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .invoice-table tr:last-child td {
+                border-top: 2px solid #3a6df0 !important;
+                background-color: #f9fafc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .invoice-footer {
+                border-top: 1px dashed #e4e8f3 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
             }
         }
     </style>
 </head>
 <body>
-    <main>
-        <article id="generatorSection">
-            <hgroup>
-                <div class="icon-header">
+    <header class="app-header">
+        <div class="container">
+            <div class="app-title">
+                <i class="fas fa-building"></i>
+                <h1>Gestione Fatture Condomini</h1>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="card" id="generatorSection">
+            <div class="card-header">
+                <h3 class="card-header-title">
                     <i class="fas fa-file-invoice"></i>
-                    <h2>Genera Nuova Fattura</h2>
-                </div>
-                <p>Seleziona il condominio, l'appartamento e la data di fine periodo.</p>
-            </hgroup>
-            <form id="generationForm">
-                <div class="form-grid">
-                    <label for="condominioSelect">
-                        <i class="fas fa-building"></i> Condominio
-                        <select id="condominioSelect" required>
-                            <option value="">Caricamento...</option>
-                        </select>
-                    </label>
-                    <label for="appartamentoSelect">
-                        <i class="fas fa-home"></i> Appartamento
-                        <select id="appartamentoSelect" required disabled>
-                            <option value="">--- Seleziona Condominio ---</option>
-                        </select>
-                    </label>
-                    <label for="dataFine">
-                        <i class="fas fa-calendar-alt"></i> Data Fine Periodo
-                        <input type="date" id="dataFine" required>
-                    </label>
-                    <label for="metodoPagamento">
-                        <i class="fas fa-credit-card"></i> Metodo di Pagamento
-                        <select id="metodoPagamento" required>
-                            <option value="">--- Seleziona Metodo ---</option>
-                            <option value="Bonifico">Bonifico Bancario</option>
-                            <option value="Contanti">Contanti</option>
-                            <option value="CartaCredito">Carta di Credito</option>
-                            <option value="CartaDebito">Carta di Debito</option>
-                            <option value="Assegno">Assegno</option>
-                            <option value="PayPal">PayPal</option>
-                            <option value="Altro">Altro</option>
-                        </select>
-                    </label>
-                </div>
-                <button type="button" id="generateButton" style="margin-top: 1rem;">
-                    <i class="fas fa-file-invoice"></i> Genera Fattura
-                </button>
-            </form>
-            <div id="statusMessage" class="status" style="display: none;"></div>
-        </article>
-
-        <div style="padding: 0 2rem 1rem 2rem; text-align: center;">
-            <button id="printButton" style="display: none;">
+                    Genera Nuova Fattura
+                </h3>
+            </div>
+            <div class="card-body">
+                <form id="generationForm">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label for="condominioSelect" class="form-label">
+                                    <i class="fas fa-building"></i> Condominio
+                                </label>
+                                <select id="condominioSelect" class="form-select" required>
+                                    <option value="">Caricamento...</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label for="appartamentoSelect" class="form-label">
+                                    <i class="fas fa-home"></i> Appartamento
+                                </label>
+                                <select id="appartamentoSelect" class="form-select" required disabled>
+                                    <option value="">--- Seleziona Condominio ---</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label for="dataFine" class="form-label">
+                                    <i class="fas fa-calendar-alt"></i> Data Fine Periodo
+                                </label>
+                                <input type="date" id="dataFine" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label for="metodoPagamento" class="form-label">
+                                    <i class="fas fa-credit-card"></i> Metodo di Pagamento
+                                </label>
+                                <select id="metodoPagamento" class="form-select" required>
+                                    <option value="">--- Seleziona Metodo ---</option>
+                                    <option value="Bonifico">Bonifico Bancario</option>
+                                    <option value="Contanti">Contanti</option>
+                                    <option value="CartaCredito">Carta di Credito</option>
+                                    <option value="CartaDebito">Carta di Debito</option>
+                                    <option value="Assegno">Assegno</option>
+                                    <option value="PayPal">PayPal</option>
+                                    <option value="Altro">Altro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="statusMessage" class="alert" style="display: none;"></div>
+                    
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <button type="button" id="generateButton" class="btn btn-primary">
+                            <i class="fas fa-file-invoice"></i> Genera Fattura
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <button id="printButton" class="btn btn-secondary" style="display: none;">
                 <i class="fas fa-print"></i> Stampa Fattura
             </button>
         </div>
-
-        <div id="invoicePreview">
-            <p><i>Caricamento anteprima...</i></p>
+        
+        <!-- Nuova anteprima fattura con design moderno -->
+        <div id="invoicePreview" style="display: none;" class="invoice-container">
+            <div class="invoice-header">
+                <div class="invoice-logo">
+                    <i class="fas fa-file-invoice"></i>
+                    <div class="invoice-title">Fattura <span id="invoice-id">F-12345</span></div>
+                </div>
+                <div class="invoice-company">
+                    <div id="company-name">Nome Condominio S.p.A.</div>
+                    <div id="company-address">Via Roma 123, 00100 Roma</div>
+                    <div>P.IVA/CF: <span id="company-vat">IT12345678901</span></div>
+                </div>
+            </div>
+            
+            <div class="invoice-body">
+                <div class="invoice-details">
+                    <div class="invoice-details-box">
+                        <h4><i class="fas fa-user"></i> Intestatario</h4>
+                        <p>
+                            <strong id="client-name">Mario Rossi</strong><br>
+                            <span id="client-address">Piano 3, Interno 8</span><br>
+                            CF/P.IVA: <span id="client-vat">RSSMRA80A01H501Z</span>
+                        </p>
+                    </div>
+                    
+                    <div class="invoice-details-box">
+                        <h4><i class="fas fa-info-circle"></i> Dettagli Fattura</h4>
+                        <p>
+                            <strong>Stato:</strong> <span id="invoice-status">Da Pagare</span><br>
+                            <strong>Data Emissione:</strong> <span id="invoice-date">01/04/2025</span><br>
+                            <strong>Data Scadenza:</strong> <span id="invoice-due-date">01/05/2025</span><br>
+                            <strong>Periodo:</strong> <span id="invoice-period">01/03/2025 - 31/03/2025</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="payment-method">
+                    <h4><i class="fas fa-credit-card"></i> Metodo di Pagamento</h4>
+                    <p><i class="fas fa-university payment-method-icon"></i> <strong id="payment-method">Bonifico Bancario</strong></p>
+                </div>
+                
+                <h4 style="margin-top: 2rem;"><i class="fas fa-shopping-cart"></i> Consumi e Importi</h4>
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>Servizio</th>
+                            <th>Consumo</th>
+                            <th>Importo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-bolt"></i> Energia Elettrica</td>
+                            <td id="consumption-electric">250 kWh</td>
+                            <td id="amount-electric">42,50 €</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-tint"></i> Acqua</td>
+                            <td id="consumption-water">18 m³</td>
+                            <td id="amount-water">36,00 €</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-fire"></i> Gas</td>
+                            <td id="consumption-gas">85 m³</td>
+                            <td id="amount-gas">93,50 €</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><strong>TOTALE</strong></td>
+                            <td id="amount-total"><strong>172,00 €</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="invoice-details-box">
+                            <h4><i class="fas fa-money-check-alt"></i> Coordinate Bancarie</h4>
+                            <p>
+                                <strong>IBAN:</strong> <span id="company-iban">IT60X0542811101000000123456</span><br>
+                                <strong>Intestato a:</strong> <span id="company-name-bank">Nome Condominio S.p.A.</span><br>
+                                <strong>Causale:</strong> Fattura <span id="invoice-id-ref">F-12345</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="qr-code">
+                            <div class="qr-code-img"></div>
+                            <div class="qr-code-text">Scansiona per pagamento rapido</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="invoice-footer">
+                    <p><strong>Note:</strong> <span id="invoice-notes">Pagamento da effettuare entro la data di scadenza. In caso di ritardato pagamento verranno applicati gli interessi di mora come da regolamento condominiale.</span></p>
+                    <p>
+                        <i class="fas fa-envelope"></i> Email: <span id="company-email">admin@condominio.it</span> | 
+                        <i class="fas fa-phone"></i> Tel: <span id="company-phone">06 1234567</span>
+                    </p>
+                    <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #6b7a99;">
+                        <i class="fas fa-shield-alt"></i> Documento generato automaticamente dal sistema di gestione condomini.
+                    </p>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -442,7 +953,7 @@
             
             // Feedback se non ci sono appartamenti nel condominio selezionato
             if (selectedCondominioId && filteredAppartamenti.length === 0) {
-                displayStatus(`Nessun appartamento trovato per il condominio "${selectedCondominioId}"`, "error");
+                displayStatus(`Nessun appartamento trovato per il condominio "${selectedCondominioId}"`, "alert-danger");
             }
         }
         
@@ -457,24 +968,24 @@
             
             // Validazione input
             if (!idCondominioSelezionato) { 
-                displayStatus("Errore: Seleziona prima un Condominio.", "error"); 
+                displayStatus("Errore: Seleziona prima un Condominio.", "alert-danger"); 
                 return; 
             }
             if (!idAppartamentoSelezionato) { 
-                displayStatus("Errore: Seleziona un Appartamento.", "error"); 
+                displayStatus("Errore: Seleziona un Appartamento.", "alert-danger"); 
                 return; 
             }
             if (!dataFine) { 
-                displayStatus("Errore: Seleziona una Data Fine Periodo.", "error"); 
+                displayStatus("Errore: Seleziona una Data Fine Periodo.", "alert-danger"); 
                 return; 
             }
             if (!metodoPagamento) { 
-                displayStatus("Errore: Seleziona un Metodo di Pagamento.", "error"); 
+                displayStatus("Errore: Seleziona un Metodo di Pagamento.", "alert-danger"); 
                 return; 
             }
             
             console.log(`Tentativo generazione fattura per App ID: ${idAppartamentoSelezionato} fino al ${dataFine}, pagamento: ${metodoPagamento}`);
-            displayStatus("Generazione fattura in corso...", "loading");
+            displayStatus("Generazione fattura in corso...", "alert-info");
             
             // Imposta stato di caricamento
             generateButton.setAttribute('aria-busy', 'true');
@@ -505,7 +1016,7 @@
             
             if (settings && settings.error) {
                 // Mostra l'errore all'utente
-                displayStatus(`Errore: ${settings.error}`, "error");
+                displayStatus(`Errore: ${settings.error}`, "alert-danger");
             }
             
             impostazioniGlobali = settings || {};
@@ -514,51 +1025,39 @@
         /**
          * Popola il dropdown dei Condomini
          */
-        // DENTRO Fatture.html -> SOSTITUISCI LA VECCHIA setupCondominiDropdown CON QUESTA:
-
-/**
- * Popola il dropdown dei Condomini
- * @param {Array<Object>} condominiList - Array di oggetti {id, nome}
- */
-function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
-    console.log("Configurazione dropdown condomini...");
-    const condominioSelect = document.getElementById('condominioSelect'); 
-    
-    // Reset del dropdown
-    condominioSelect.innerHTML = ''; 
-    
-    if (condominiList && condominiList.length > 0) {
-        // Aggiungi l'opzione default
-        const defaultOption = document.createElement('option');
-        defaultOption.value = "";
-        defaultOption.textContent = "--- Seleziona Condominio ---";
-        condominioSelect.appendChild(defaultOption);
-        
-        // Aggiungi le opzioni dei condomini CORRETTAMENTE
-        condominiList.forEach(condominio => { // Itera sull'oggetto 'condominio'
-            const option = document.createElement('option');
-            // --- CORREZIONI CHIAVE ---
-            option.value = condominio.id;       // Assegna la PROPRIETA' 'id' al valore
-            option.textContent = condominio.nome; // Assegna la PROPRIETA' 'nome' al testo visibile
-            // -------------------------
-            condominioSelect.appendChild(option);
-        });
-        console.log(`Popolati ${condominiList.length} condomini`);
-    } else {
-        // Nessun condominio trovato
-        const option = document.createElement('option');
-        option.value = "";
-        option.textContent = "Nessun condominio trovato";
-        condominioSelect.appendChild(option);
-        
-        // Mostra un messaggio di errore se necessario
-        if (typeof displayStatus === 'function') {
-            displayStatus("Nessun condominio trovato nel foglio 'Appartamenti'. Verifica i dati.", "error");
-        } else {
-            console.error("Nessun condominio trovato nel foglio 'Appartamenti'.");
+        function setupCondominiDropdown(condominiList) {
+            console.log("Configurazione dropdown condomini...");
+            const condominioSelect = document.getElementById('condominioSelect'); 
+            
+            // Reset del dropdown
+            condominioSelect.innerHTML = ''; 
+            
+            if (condominiList && condominiList.length > 0) {
+                // Aggiungi l'opzione default
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = "--- Seleziona Condominio ---";
+                condominioSelect.appendChild(defaultOption);
+                
+                // Aggiungi le opzioni dei condomini
+                condominiList.forEach(condominio => {
+                    const option = document.createElement('option');
+                    option.value = condominio.id;
+                    option.textContent = condominio.nome;
+                    condominioSelect.appendChild(option);
+                });
+                console.log(`Popolati ${condominiList.length} condomini`);
+            } else {
+                // Nessun condominio trovato
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Nessun condominio trovato";
+                condominioSelect.appendChild(option);
+                
+                // Mostra un messaggio di errore
+                displayStatus("Nessun condominio trovato nel foglio 'Appartamenti'. Verifica i dati.", "alert-danger");
+            }
         }
-    }
-}
         
         /**
          * Memorizza i dati di tutti gli appartamenti
@@ -601,7 +1100,7 @@ function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
             
             if (!risultato || risultato.error) {
                 // Gestione errori
-                displayStatus(risultato?.error || "Errore sconosciuto nella generazione della fattura.", "error");
+                displayStatus(risultato?.error || "Errore sconosciuto nella generazione della fattura.", "alert-danger");
                 return;
             }
             
@@ -609,11 +1108,14 @@ function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
             risultato.metodoPagamento = metodoPagamento;
             
             // Successo
-            displayStatus(`Fattura ${risultato.id} generata con successo!`, "success");
+            displayStatus(`Fattura ${risultato.id} generata con successo!`, "alert-success");
             console.log("Fattura generata:", risultato);
             
             // Popola e visualizza anteprima
             popolaAnteprimaFattura(risultato);
+            
+            // Mostra pulsante stampa
+            printButton.style.display = 'inline-flex';
         }
         
         /**
@@ -632,7 +1134,7 @@ function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
         }
         
         /**
-         * Popola l'anteprima della fattura
+         * Popola l'anteprima della fattura con design moderno
          */
         function popolaAnteprimaFattura(dati) {
             if (!dati) {
@@ -640,11 +1142,7 @@ function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
                 return;
             }
             
-            console.log("Popolamento anteprima fattura...");
-            
-            // Mostro l'anteprima e bottone stampa
-            invoicePreviewDiv.style.display = 'block';
-            printButton.style.display = 'block';
+            console.log("Popolamento anteprima fattura...", dati);
             
             // Formatta le date in formato italiano
             const formatDate = (dateStr) => {
@@ -656,111 +1154,57 @@ function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
                 return dateStr;
             };
             
-            // Preparazione dati formattati per la visualizzazione
-            const formattedData = {
-                id: dati.id || "N/D",
-                intestatario: dati.intestatario || "N/D",
-                indirizzo: dati.indirizzo || "N/D",
-                cfPiva: dati.cfPiva || "N/D",
-                dataInizio: formatDate(dati.dataInizio),
-                dataFine: formatDate(dati.dataFine),
-                dataEmissione: formatDate(dati.dataEmissione),
-                dataScadenza: formatDate(dati.dataScadenza),
-                consumoElettrico: (dati.consumoElettrico !== undefined ? dati.consumoElettrico.toLocaleString('it-IT') : "0") + " kWh",
-                importoElettrico: (dati.importoElettrico !== undefined ? dati.importoElettrico.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                consumoAcqua: (dati.consumoAcqua !== undefined ? dati.consumoAcqua.toLocaleString('it-IT') : "0") + " m³",
-                importoAcqua: (dati.importoAcqua !== undefined ? dati.importoAcqua.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                consumoGas: (dati.consumoGas !== undefined ? dati.consumoGas.toLocaleString('it-IT') : "0") + " m³",
-                importoGas: (dati.importoGas !== undefined ? dati.importoGas.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                importoTotale: (dati.importoTotale !== undefined ? dati.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                stato: dati.stato || "Non Definito",
-                metodoPagamento: dati.metodoPagamento || "Non specificato",
-                aziendaInfo: dati.aziendaInfo || {},
+            // Formatta i numeri in formato italiano
+            const formatNumber = (num, decimals = 0) => {
+                if (num === undefined || num === null) return "0";
+                return num.toLocaleString('it-IT', {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals
+                });
             };
             
-            // Icona per il metodo di pagamento
-            const paymentIcon = getPaymentMethodIcon(formattedData.metodoPagamento);
+            // Imposta i valori nell'anteprima fattura
+            document.getElementById('invoice-id').textContent = dati.id || "N/D";
+            document.getElementById('invoice-id-ref').textContent = dati.id || "N/D";
             
-            // Template HTML per l'anteprima della fattura
-            const invoiceHtml = `
-                <div id="invoiceHeader">
-                    <h2><i class="fas fa-file-invoice"></i> FATTURA ${formattedData.id}</h2>
-                    <p>${formattedData.aziendaInfo.nome || ""}<br>
-                    ${formattedData.aziendaInfo.indirizzo || ""}<br>
-                    P.IVA/CF: ${formattedData.aziendaInfo.pivaCf || ""}</p>
-                </div>
-                
-                <div class="invoice-details">
-                    <div class="invoice-details-box">
-                        <h4><i class="fas fa-user"></i> Intestatario</h4>
-                        <p><strong>${formattedData.intestatario}</strong><br>
-                        ${formattedData.indirizzo}<br>
-                        CF/P.IVA: ${formattedData.cfPiva}</p>
-                    </div>
-                    <div class="invoice-details-box">
-                        <h4><i class="fas fa-info-circle"></i> Dettagli Fattura</h4>
-                        <p>
-                        <strong>Stato:</strong> ${formattedData.stato}<br>
-                        <strong>Data Emissione:</strong> ${formattedData.dataEmissione}<br>
-                        <strong>Data Scadenza:</strong> ${formattedData.dataScadenza}<br>
-                        <strong>Periodo:</strong> ${formattedData.dataInizio} - ${formattedData.dataFine}</p>
-                    </div>
-                </div>
-                
-                <div class="payment-method">
-                    <h4><i class="fas fa-credit-card"></i> Metodo di Pagamento</h4>
-                    <p><i class="fas ${paymentIcon} payment-method-icon"></i> <strong>${formattedData.metodoPagamento}</strong></p>
-                </div>
-                
-                <h4><i class="fas fa-shopping-cart"></i> Consumi e Importi</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Servizio</th>
-                            <th>Consumo</th>
-                            <th>Importo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><i class="fas fa-bolt"></i> Energia Elettrica</td>
-                            <td>${formattedData.consumoElettrico}</td>
-                            <td>${formattedData.importoElettrico}</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-tint"></i> Acqua</td>
-                            <td>${formattedData.consumoAcqua}</td>
-                            <td>${formattedData.importoAcqua}</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-fire"></i> Gas</td>
-                            <td>${formattedData.consumoGas}</td>
-                            <td>${formattedData.importoGas}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><strong>TOTALE</strong></td>
-                            <td><strong>${formattedData.importoTotale}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <div style="margin-top: 2rem;">
-                    <h4><i class="fas fa-money-check-alt"></i> Modalità di Pagamento</h4>
-                    <p><strong>IBAN:</strong> ${formattedData.aziendaInfo.iban || "N/D"}<br>
-                    <strong>Intestato a:</strong> ${formattedData.aziendaInfo.nome || "N/D"}</p>
-                </div>
-                
-                <footer>
-                    <p><strong>Note:</strong> ${formattedData.aziendaInfo.note || ""}</p>
-                    <p><i class="fas fa-envelope"></i> Email: ${formattedData.aziendaInfo.email || ""} - <i class="fas fa-phone"></i> Tel: ${formattedData.aziendaInfo.telefono || ""}</p>
-                    <p style="text-align: center; margin-top: 1rem; font-size: 0.8em; color: #999;">
-                        <i class="fas fa-info-circle"></i> Documento generato automaticamente dal sistema di gestione condomini.
-                    </p>
-                </footer>
-            `;
+            // Intestatario
+            document.getElementById('client-name').textContent = dati.intestatario || "N/D";
+            document.getElementById('client-address').textContent = dati.indirizzo || "N/D";
+            document.getElementById('client-vat').textContent = dati.cfPiva || "N/D";
             
-            // Aggiorna contenuto dell'anteprima
-            invoicePreviewDiv.innerHTML = invoiceHtml;
+            // Dettagli fattura
+            document.getElementById('invoice-status').textContent = dati.stato || "Da Pagare";
+            document.getElementById('invoice-date').textContent = formatDate(dati.dataEmissione);
+            document.getElementById('invoice-due-date').textContent = formatDate(dati.dataScadenza);
+            document.getElementById('invoice-period').textContent = `${formatDate(dati.dataInizio)} - ${formatDate(dati.dataFine)}`;
+            
+            // Metodo di pagamento
+            document.getElementById('payment-method').textContent = dati.metodoPagamento || "Non specificato";
+            document.querySelector('.payment-method i').className = `fas ${getPaymentMethodIcon(dati.metodoPagamento)} payment-method-icon`;
+            
+            // Consumi e importi
+            document.getElementById('consumption-electric').textContent = formatNumber(dati.consumoElettrico) + " kWh";
+            document.getElementById('amount-electric').textContent = formatNumber(dati.importoElettrico, 2) + " €";
+            document.getElementById('consumption-water').textContent = formatNumber(dati.consumoAcqua) + " m³";
+            document.getElementById('amount-water').textContent = formatNumber(dati.importoAcqua, 2) + " €";
+            document.getElementById('consumption-gas').textContent = formatNumber(dati.consumoGas) + " m³";
+            document.getElementById('amount-gas').textContent = formatNumber(dati.importoGas, 2) + " €";
+            document.getElementById('amount-total').textContent = formatNumber(dati.importoTotale, 2) + " €";
+            
+            // Azienda
+            if (dati.aziendaInfo) {
+                document.getElementById('company-name').textContent = dati.aziendaInfo.nome || "N/D";
+                document.getElementById('company-name-bank').textContent = dati.aziendaInfo.nome || "N/D";
+                document.getElementById('company-address').textContent = dati.aziendaInfo.indirizzo || "N/D";
+                document.getElementById('company-vat').textContent = dati.aziendaInfo.pivaCf || "N/D";
+                document.getElementById('company-email').textContent = dati.aziendaInfo.email || "N/D";
+                document.getElementById('company-phone').textContent = dati.aziendaInfo.telefono || "N/D";
+                document.getElementById('company-iban').textContent = dati.aziendaInfo.iban || "N/D";
+                document.getElementById('invoice-notes').textContent = dati.aziendaInfo.note || "";
+            }
+            
+            // Mostra l'anteprima
+            invoicePreviewDiv.style.display = 'block';
         }
         
         /**
@@ -778,7 +1222,7 @@ function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
             statusMessageDiv.style.display = 'block';
             
             // Rimuovi tutte le classi di stato
-            statusMessageDiv.classList.remove('error', 'success', 'loading');
+            statusMessageDiv.className = 'alert';
             
             // Aggiungi la classe appropriata
             if (type) {
@@ -803,7 +1247,7 @@ function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
             generateButton.removeAttribute('aria-busy');
             generateButton.disabled = false;
             
-            displayStatus(error?.message || "Si è verificato un errore durante l'operazione.", "error");
+            displayStatus(error?.message || "Si è verificato un errore durante l'operazione.", "alert-danger");
         }
     });
     </script>
