@@ -4,808 +4,1733 @@
     <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Generatore Fatture</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Elenco Fatture</title>
+    
+    <!-- Font e CSS moderni -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --primary-color: #3498db;
-            --primary-hover: #2980b9;
-            --secondary-color: #f39c12;
-            --accent-color: #27ae60;
-            --background-light: #f8f9fa;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* Palette colori moderna */
+            --color-primary: #3a6df0;
+            --color-primary-light: #6e92f6;
+            --color-primary-dark: #2c56cf;
+            --color-secondary: #ff6b6b;
+            --color-accent: #00d084;
+            
+            --color-success: #2dd36f;
+            --color-warning: #ffc409;
+            --color-danger: #eb445a;
+            --color-info: #3dc2ff;
+            
+            --color-bg: #f9fafc;
+            --color-card: #ffffff;
+            --color-text: #1a2b4b;
+            --color-text-light: #6b7a99;
+            --color-border: #e4e8f3;
+            
+            --shadow-sm: 0 2px 8px rgba(0, 6, 39, 0.05);
+            --shadow-md: 0 4px 16px rgba(0, 6, 39, 0.1);
+            --shadow-lg: 0 8px 24px rgba(0, 6, 39, 0.12);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            
+            --transition: all 0.3s ease;
+            
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-xxl: 3rem;
         }
         
-        body { 
-            padding-bottom: 5rem; 
-            background-color: var(--background-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* Reset e base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        main { 
-            max-width: 1024px; 
-            margin: 2rem auto; 
-            padding: 0; 
-            background-color: white; 
-            border-radius: var(--border-radius); 
-            box-shadow: var(--box-shadow);
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            font-size: 16px;
+            font-weight: 400;
+            overflow-x: hidden;
+            padding-bottom: 5rem;
         }
         
-        article { 
-            margin: 0; 
-            padding: 2rem; 
-            border-bottom: 1px solid #e0e0e0; 
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
         }
         
-        article:last-of-type { 
-            border-bottom: none; 
+        h1 {
+            font-size: 2.25rem;
+            font-family: 'Playfair Display', serif;
         }
         
-        hgroup { 
+        h2 {
+            font-size: 1.875rem;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+        }
+        
+        p {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+        
+        .app-header {
+            background-color: var(--color-card);
+            padding: var(--spacing-lg) 0;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+        }
+        
+        /* Card design */
+        .card {
+            background-color: var(--color-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .card-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-header-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: 0;
+        }
+        
+        .card-header-title i {
+            color: var(--color-primary);
+            font-size: 1.4rem;
+        }
+        
+        .card-body {
+            padding: var(--spacing-xl);
+        }
+        
+        /* Bottoni */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .btn:focus, .btn:hover {
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            color: #fff;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-primary-dark);
+            border-color: var(--color-primary-dark);
+        }
+        
+        .btn-secondary {
+            color: #fff;
+            background-color: var(--color-secondary);
+            border-color: var(--color-secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e55c5c;
+            border-color: #e55c5c;
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-primary);
+            background-color: transparent;
+            border-color: var(--color-primary);
+        }
+        
+        .btn-outline-primary:hover {
+            color: #fff;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        /* Form elements */
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--color-primary-light);
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(58, 109, 240, 0.15);
+        }
+        
+        .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 2.25rem 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            appearance: none;
+            transition: var(--transition);
+        }
+        
+        .form-select:focus {
+            border-color: var(--color-primary-light);
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(58, 109, 240, 0.15);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            padding-left: 0;
+            margin-bottom: var(--spacing-lg);
+            list-style: none;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .nav-tabs .nav-item {
+            margin-bottom: -1px;
+        }
+        
+        .nav-tabs .nav-link {
+            display: block;
+            padding: 0.75rem 1.25rem;
+            margin-right: 0.25rem;
+            text-decoration: none;
+            color: var(--color-text-light);
+            border: 1px solid transparent;
+            border-top-left-radius: var(--radius-sm);
+            border-top-right-radius: var(--radius-sm);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            border-color: var(--color-border) var(--color-border) var(--color-border);
+            background-color: rgba(58, 109, 240, 0.05);
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--color-primary);
+            background-color: var(--color-card);
+            border-color: var(--color-border) var(--color-border) var(--color-card);
+            border-bottom: 2px solid var(--color-primary);
+        }
+        
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            width: 100%;
+            margin-bottom: var(--spacing-lg);
+            color: var(--color-text);
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-top: 1px solid var(--color-border);
+        }
+        
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid var(--color-primary);
+            background-color: #f9fafc;
+            color: var(--color-text);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tbody + tbody {
+            border-top: 2px solid var(--color-border);
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(58, 109, 240, 0.03);
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background-color: rgba(249, 250, 252, 0.5);
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 20px;
+            transition: var(--transition);
+        }
+        
+        .badge-success {
+            color: #fff;
+            background-color: var(--color-success);
+        }
+        
+        .badge-warning {
+            color: #212529;
+            background-color: var(--color-warning);
+        }
+        
+        .badge-danger {
+            color: #fff;
+            background-color: var(--color-danger);
+        }
+        
+        .badge-info {
+            color: #fff;
+            background-color: var(--color-info);
+        }
+        
+        /* Alerts */
+        .alert {
+            position: relative;
+            padding: 1rem 1.25rem;
             margin-bottom: 1.5rem;
-            border-left: 4px solid var(--primary-color);
-            padding-left: 1rem;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
         }
         
-        hgroup h2 {
-            color: var(--primary-color);
-            margin-bottom: 0.2rem;
+        .alert-icon {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
         }
         
-        .icon-header {
+        .alert-success {
+            color: #0d5a3e;
+            background-color: #d8f7e9;
+            border-color: #baeed6;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        /* Filter box */
+        .filter-box {
+            background-color: #f9fafc;
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            border: 1px solid var(--color-border);
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            align-items: end;
+        }
+        
+        .filter-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 0.35em 0.75em;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .status-badge i {
+            margin-right: 0.35em;
+        }
+        
+        .status-badge.status-pagata {
+            background-color: rgba(45, 211, 111, 0.1);
+            color: var(--color-success);
+            border: 1px solid rgba(45, 211, 111, 0.2);
+        }
+        
+        .status-badge.status-da-pagare {
+            background-color: rgba(255, 196, 9, 0.1);
+            color: #856404;
+            border: 1px solid rgba(255, 196, 9, 0.2);
+        }
+        
+        .status-badge.status-scaduta {
+            background-color: rgba(235, 68, 90, 0.1);
+            color: var(--color-danger);
+            border: 1px solid rgba(235, 68, 90, 0.2);
+        }
+        
+        /* Action icons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            border: 1px solid var(--color-border);
+            background-color: white;
+            color: var(--color-text-light);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .btn-action:hover {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-action.btn-view:hover {
+            background-color: var(--color-info);
+            border-color: var(--color-info);
+        }
+        
+        .btn-action.btn-edit:hover {
+            background-color: var(--color-warning);
+            border-color: var(--color-warning);
+        }
+        
+        .btn-action.btn-delete:hover {
+            background-color: var(--color-danger);
+            border-color: var(--color-danger);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            outline: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 1.75rem auto;
+            max-width: 500px;
+            pointer-events: none;
+        }
+        
+        @media (min-width: 576px) {
+            .modal-dialog {
+                max-width: 500px;
+                margin: 1.75rem auto;
+            }
+        }
+        
+        .modal-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            pointer-events: auto;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            outline: 0;
+            animation: modalshow 0.3s ease-out;
+        }
+        
+        @keyframes modalshow {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--color-border);
+            border-top-left-radius: calc(0.3rem - 1px);
+            border-top-right-radius: calc(0.3rem - 1px);
+        }
+        
+        .modal-title {
+            margin-bottom: 0;
+            line-height: 1.5;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
-        .icon-header i {
-            color: var(--primary-color);
+        .modal-header .close {
+            padding: 1.25rem;
+            margin: -1.25rem;
+            background-color: transparent;
+            border: 0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-light);
+        }
+        
+        .modal-body {
+            position: relative;
+            flex: 1 1 auto;
+            padding: 1.25rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            border-bottom-right-radius: calc(0.3rem - 1px);
+            border-bottom-left-radius: calc(0.3rem - 1px);
+            gap: 0.5rem;
+        }
+        
+        /* Loader */
+        .loader {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            vertical-align: text-bottom;
+            border: 3px solid var(--color-primary-light);
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner 0.75s linear infinite;
+        }
+        
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Summary cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .summary-card {
+            background-color: white;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .summary-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-lg);
             font-size: 1.5rem;
         }
         
-        button {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            transition: all 0.3s ease;
+        .summary-icon.bg-primary {
+            background-color: rgba(58, 109, 240, 0.1);
+            color: var(--color-primary);
         }
         
-        button:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
+        .summary-icon.bg-success {
+            background-color: rgba(45, 211, 111, 0.1);
+            color: var(--color-success);
         }
         
-        button.secondary {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
+        .summary-icon.bg-warning {
+            background-color: rgba(255, 196, 9, 0.1);
+            color: var(--color-warning);
         }
         
-        select, input[type="date"] {
-            border-radius: var(--border-radius);
-            border: 1px solid #ddd;
-            transition: all 0.3s ease;
+        .summary-icon.bg-danger {
+            background-color: rgba(235, 68, 90, 0.1);
+            color: var(--color-danger);
         }
         
-        select:focus, input[type="date"]:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        .summary-info {
+            flex: 1;
         }
         
-        /* Stili per l'anteprima fattura */
-        #invoicePreview { 
-            margin-top: 2rem; 
-            padding: 2rem; 
-            border: 1px solid #e0e0e0; 
-            background-color: white; 
-            display: none; 
-            border-radius: var(--border-radius);
+        .summary-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
         }
         
-        #invoicePreview h2, #invoicePreview h3, #invoicePreview h4 { 
-            color: var(--primary-color); 
-            margin-bottom: 0.5em; 
-            margin-top: 1.2em; 
+        .summary-label {
+            color: var(--color-text-light);
+            font-size: 0.875rem;
         }
         
-        #invoicePreview h4 { 
-            font-size: 1.1em; 
-            border-bottom: 2px solid var(--secondary-color); 
-            padding-bottom: 0.5em; 
-            margin-bottom: 1em;
-            display: inline-block;
-        }
-        
-        #invoicePreview table { 
-            width: 100%;
-            margin-top: 1rem; 
-            margin-bottom: 1.5rem;
-            border-collapse: collapse;
-        }
-        
-        #invoicePreview table th {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.8rem;
-            text-align: left;
-        }
-        
-        #invoicePreview table td {
-            padding: 0.8rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        #invoicePreview table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        #invoicePreview table tr:last-child {
-            font-weight: bold;
-            background-color: #f0f0f0;
-        }
-        
-        #invoicePreview footer { 
-            margin-top: 2rem; 
-            padding-top: 1rem; 
-            border-top: 1px dashed #ddd; 
-            font-size: 0.9em; 
-            color: #666; 
-        }
-        
-        #invoiceHeader { 
-            margin-bottom: 2rem; 
-            padding-bottom: 1rem; 
-            border-bottom: 3px solid var(--primary-color); 
-            text-align: center; 
-            color: var(--primary-color);
-        }
-        
-        #invoiceHeader h2 { 
-            margin-bottom: 0.2em; 
-            font-size: 2rem;
-        }
-        
-        .invoice-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .invoice-details-box {
-            padding: 1.5rem;
-            background-color: #f8f9fa;
-            border-radius: var(--border-radius);
-            border-left: 3px solid var(--secondary-color);
-        }
-        
-        .payment-method {
-            background-color: #f0f9ff;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--primary-color);
-        }
-        
-        .payment-method-icon {
-            margin-right: 0.5rem;
-            color: var(--primary-color);
-        }
-        
-        #printButton { 
-            display: none; 
-            margin: 1rem 2rem; 
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-        
-        .status { 
-            margin-top: 1rem; 
-            font-weight: bold; 
-            padding: 0.8rem 1rem; 
-            border-radius: var(--border-radius); 
-            display: block; 
-            text-align: center;
-        }
-        
-        .error { 
-            color: #721c24; 
-            background-color: #f8d7da; 
-            border: 1px solid #f5c6cb; 
-        }
-        
-        .success { 
-            color: #155724; 
-            background-color: #d4edda; 
-            border: 1px solid #c3e6cb;
-        }
-        
-        .loading { 
-            color: #004085; 
-            background-color: #cce5ff; 
-            border: 1px solid #b8daff;
-        }
-        
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-            gap: 1rem; 
-            align-items: end; 
-        }
-        
-        /* Stili per la stampa */
-        @media print {
-            body { 
-                background-color: white; 
-                padding: 0; 
-                margin: 0; 
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-md);
             }
             
-            main { 
-                max-width: none; 
-                margin: 0; 
-                padding: 0; 
-                box-shadow: none; 
+            .card-header .btn {
+                align-self: stretch;
+                width: 100%;
             }
             
-            article, div:not(#invoicePreview) { 
-                display: none; 
+            .nav-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
             }
             
-            #invoicePreview { 
-                display: block !important; 
-                margin: 0; 
-                padding: 1cm; 
-                border: none; 
+            .action-buttons {
+                flex-wrap: wrap;
             }
             
-            #printButton { 
-                display: none !important; 
+            .modal-dialog {
+                margin: 0.5rem;
             }
         }
     </style>
 </head>
+
 <body>
-    <main>
-        <article id="generatorSection">
-            <hgroup>
-                <div class="icon-header">
-                    <i class="fas fa-file-invoice"></i>
-                    <h2>Genera Nuova Fattura</h2>
-                </div>
-                <p>Seleziona il condominio, l'appartamento e la data di fine periodo.</p>
-            </hgroup>
-            <form id="generationForm">
-                <div class="form-grid">
-                    <label for="condominioSelect">
-                        <i class="fas fa-building"></i> Condominio
-                        <select id="condominioSelect" required>
-                            <option value="">Caricamento...</option>
-                        </select>
-                    </label>
-                    <label for="appartamentoSelect">
-                        <i class="fas fa-home"></i> Appartamento
-                        <select id="appartamentoSelect" required disabled>
-                            <option value="">--- Seleziona Condominio ---</option>
-                        </select>
-                    </label>
-                    <label for="dataFine">
-                        <i class="fas fa-calendar-alt"></i> Data Fine Periodo
-                        <input type="date" id="dataFine" required>
-                    </label>
-                    <label for="metodoPagamento">
-                        <i class="fas fa-credit-card"></i> Metodo di Pagamento
-                        <select id="metodoPagamento" required>
-                            <option value="">--- Seleziona Metodo ---</option>
-                            <option value="Bonifico">Bonifico Bancario</option>
-                            <option value="Contanti">Contanti</option>
-                            <option value="CartaCredito">Carta di Credito</option>
-                            <option value="CartaDebito">Carta di Debito</option>
-                            <option value="Assegno">Assegno</option>
-                            <option value="PayPal">PayPal</option>
-                            <option value="Altro">Altro</option>
-                        </select>
-                    </label>
-                </div>
-                <button type="button" id="generateButton" style="margin-top: 1rem;">
-                    <i class="fas fa-file-invoice"></i> Genera Fattura
-                </button>
-            </form>
-            <div id="statusMessage" class="status" style="display: none;"></div>
-        </article>
-
-        <div style="padding: 0 2rem 1rem 2rem; text-align: center;">
-            <button id="printButton" style="display: none;">
-                <i class="fas fa-print"></i> Stampa Fattura
-            </button>
+    <header class="app-header">
+        <div class="container">
+            <div class="app-title">
+                <h1><i class="fas fa-building"></i> Gestione Fatture Condomini</h1>
+            </div>
         </div>
-
-        <div id="invoicePreview">
-            <p><i>Caricamento anteprima...</i></p>
+    </header>
+    
+    <main class="container">
+        <!-- Riepilogo Statistiche -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="summary-icon bg-primary">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="summary-info">
+                    <div class="summary-value" id="total-invoices">0</div>
+                    <div class="summary-label">Fatture Totali</div>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="summary-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="summary-info">
+                    <div class="summary-value" id="paid-invoices">0</div>
+                    <div class="summary-label">Fatture Pagate</div>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="summary-icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="summary-info">
+                    <div class="summary-value" id="pending-invoices">0</div>
+                    <div class="summary-label">Fatture da Pagare</div>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="summary-icon bg-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="summary-info">
+                    <div class="summary-value" id="overdue-invoices">0</div>
+                    <div class="summary-label">Fatture Scadute</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-header-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Elenco Fatture
+                </h2>
+                <a href="<?= getScriptUrl() ?>?page=new" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nuova Fattura
+                </a>
+            </div>
+            
+            <div class="card-body">
+                <ul class="nav-tabs">
+                    <li class="nav-item"><a href="#" class="nav-link active" data-tab="all">Tutte le fatture</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" data-tab="da-pagare">Da Pagare</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" data-tab="pagate">Pagate</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" data-tab="scadute">Scadute</a></li>
+                </ul>
+                
+                <div class="filter-box">
+                    <div class="filter-grid">
+                        <div>
+                            <label for="filterCondominio" class="form-label">
+                                <i class="fas fa-building"></i> Condominio
+                            </label>
+                            <select id="filterCondominio" class="form-select">
+                                <option value="">Tutti i condomini</option>
+                                <!-- Verrà popolato dinamicamente -->
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="filterAppartamento" class="form-label">
+                                <i class="fas fa-home"></i> Appartamento
+                            </label>
+                            <select id="filterAppartamento" class="form-select" disabled>
+                                <option value="">Tutti gli appartamenti</option>
+                                <!-- Verrà popolato dinamicamente -->
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="filterPeriodo" class="form-label">
+                                <i class="fas fa-calendar"></i> Periodo
+                            </label>
+                            <select id="filterPeriodo" class="form-select">
+                                <option value="">Tutti i periodi</option>
+                                <option value="current-month">Mese corrente</option>
+                                <option value="last-month">Mese scorso</option>
+                                <option value="last-3-months">Ultimi 3 mesi</option>
+                                <option value="last-6-months">Ultimi 6 mesi</option>
+                                <option value="last-year">Ultimo anno</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button type="button" id="resetFilters" class="btn btn-outline-primary">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                        <button type="button" id="applyFilters" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Applica Filtri
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="statusMessage" class="alert" style="display: none;">
+                    <i class="fas fa-info-circle alert-icon"></i>
+                    <span id="statusMessageText">Messaggio di stato</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table" id="fattureTbl">
+                        <thead>
+                            <tr>
+                                <th>ID Fattura</th>
+                                <th>Condominio</th>
+                                <th>Intestatario</th>
+                                <th>Data Emissione</th>
+                                <th>Data Scadenza</th>
+                                <th>Importo</th>
+                                <th>Stato</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fattureBody">
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div style="display: flex; justify-content: center; padding: 2rem;">
+                                        <div class="loader"></div>
+                                        <span style="margin-left: 1rem;">Caricamento fatture...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginazione -->
+                <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                    <div class="showing-entries">
+                        Visualizzazione <span id="start-entry">0</span>-<span id="end-entry">0</span> di <span id="total-entries">0</span> fatture
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-outline-primary btn-sm" id="prevPage" disabled>
+                            <i class="fas fa-chevron-left"></i> Precedente
+                        </button>
+                        <span class="current-page" style="margin: 0 1rem;">Pagina <span id="current-page">1</span></span>
+                        <button class="btn btn-outline-primary btn-sm" id="nextPage" disabled>
+                            Successiva <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
+    
+    <!-- Modal Email -->
+    <div class="modal" id="emailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-envelope"></i> Invia Fattura via Email</h5>
+                    <button type="button" class="close" onclick="closeModal('emailModal')">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="invoice-info" style="margin-bottom: 1.5rem; padding: 1rem; background-color: #f9fafc; border-radius: 8px;">
+                        <p><strong>Fattura:</strong> <span id="modalFatturaId">F-12345</span></p>
+                        <p style="margin-bottom: 0;"><strong>Intestatario:</strong> <span id="modalIntestatario">Mario Rossi</span></p>
+                    </div>
+                    
+                    <form id="emailForm">
+                        <input type="hidden" id="emailFatturaId">
+                        
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="emailDestinatario" class="form-label">
+                                <i class="fas fa-user"></i> Destinatario:
+                            </label>
+                            <input type="email" id="emailDestinatario" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="emailCc" class="form-label">
+                                <i class="fas fa-user-plus"></i> CC:
+                            </label>
+                            <input type="email" id="emailCc" class="form-control">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="emailOggetto" class="form-label">
+                                <i class="fas fa-heading"></i> Oggetto:
+                            </label>
+                            <input type="text" id="emailOggetto" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emailMessaggio" class="form-label">
+                                <i class="fas fa-comment-alt"></i> Messaggio:
+                            </label>
+                            <textarea id="emailMessaggio" class="form-control" rows="6" required></textarea>
+                        </div>
+                    </form>
+                    
+                    <div id="emailStatusMsg" class="alert" style="display: none; margin-top: 1rem;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" onclick="closeModal('emailModal')">
+                        <i class="fas fa-times"></i> Annulla
+                    </button>
+                    <button type="submit" id="sendEmailBtn" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Invia Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Stato -->
+    <div class="modal" id="statoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit"></i> Modifica Stato Fattura</h5>
+                    <button type="button" class="close" onclick="closeModal('statoModal')">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="invoice-info" style="margin-bottom: 1.5rem; padding: 1rem; background-color: #f9fafc; border-radius: 8px;">
+                        <p><strong>Fattura:</strong> <span id="modalStatoFatturaId">F-12345</span></p>
+                        <p><strong>Intestatario:</strong> <span id="modalStatoIntestatario">Mario Rossi</span></p>
+                        <p style="margin-bottom: 0;">
+                            <strong>Stato Attuale:</strong> 
+                            <span id="modalStatoAttuale" class="status-badge status-da-pagare">
+                                <i class="fas fa-clock"></i> Da Pagare
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <form id="statoForm">
+                        <input type="hidden" id="statoFatturaId">
+                        
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="statoNuovo" class="form-label">
+                                <i class="fas fa-tag"></i> Nuovo Stato:
+                            </label>
+                            <select id="statoNuovo" class="form-select" required>
+                                <option value="">Seleziona nuovo stato</option>
+                                <option value="Da Pagare">Da Pagare</option>
+                                <option value="Pagata">Pagata</option>
+                                <option value="Scaduta">Scaduta</option>
+                                <option value="Annullata">Annullata</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="statoNote" class="form-label">
+                                <i class="fas fa-sticky-note"></i> Note (opzionale):
+                            </label>
+                            <textarea id="statoNote" class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                    
+                    <div id="statoStatusMsg" class="alert" style="display: none; margin-top: 1rem;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" onclick="closeModal('statoModal')">
+                        <i class="fas fa-times"></i> Annulla
+                    </button>
+                    <button type="submit" id="updateStatusBtn" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Aggiorna Stato
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-    // ========================================================================
-    //                      JAVASCRIPT FRONTEND (Logica con Filtri)
-    // ========================================================================
-
-    // --- Variabili Globali ---
-    let allAppartamentiData = []; // Memorizza tutti gli appartamenti caricati all'inizio
-    let impostazioniGlobali = {}; // Per memorizzare le impostazioni caricate
-    
-    // Attendi che il documento sia completamente caricato
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("DOM Caricato. Inizializzazione dell'app...");
+        // Riferimenti globali
+        let allFatture = [];
+        let allCondomini = [];
+        let allAppartamenti = [];
+        let currentTab = 'all';
         
-        // --- Riferimenti Elementi DOM ---
-        const condominioSelect = document.getElementById('condominioSelect');
-        const appartamentoSelect = document.getElementById('appartamentoSelect');
-        const dataFineInput = document.getElementById('dataFine');
-        const metodoPagamentoSelect = document.getElementById('metodoPagamento');
-        const generateButton = document.getElementById('generateButton');
-        const printButton = document.getElementById('printButton');
-        const statusMessageDiv = document.getElementById('statusMessage');
-        const invoicePreviewDiv = document.getElementById('invoicePreview');
+        // Configurazione paginazione
+        const paginationConfig = {
+            itemsPerPage: 10,
+            currentPage: 1,
+            totalPages: 1
+        };
         
-        // --- Inizializzazione Event Listeners ---
-        // Aggiungi event listener per il cambio di condominio
-        condominioSelect.addEventListener('change', function() {
-            handleCondominioChange();
+        // Al caricamento del documento
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Pagina elenco fatture caricata");
+            
+            // Gestori eventi per i tab di navigazione
+            document.querySelectorAll('.nav-tabs .nav-link').forEach(function(tab) {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Cambia tab attivo
+                    document.querySelectorAll('.nav-tabs .nav-link').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Aggiorna visualizzazione
+                    currentTab = this.getAttribute('data-tab');
+                    paginationConfig.currentPage = 1;
+                    filterFatture();
+                });
+            });
+            
+            // Gestore filtro condominio
+            document.getElementById('filterCondominio').addEventListener('change', function() {
+                const condominioId = this.value;
+                const appartamentoSelect = document.getElementById('filterAppartamento');
+                
+                // Reset appartamenti
+                appartamentoSelect.innerHTML = '<option value="">Tutti gli appartamenti</option>';
+                
+                if (condominioId) {
+                    // Filtra appartamenti per condominio
+                    const filteredApps = allAppartamenti.filter(app => 
+                        String(app.condominioId) === String(condominioId)
+                    );
+                    
+                    filteredApps.forEach(app => {
+                        const option = document.createElement('option');
+                        option.value = app.id;
+                        option.textContent = app.nome;
+                        appartamentoSelect.appendChild(option);
+                    });
+                    
+                    appartamentoSelect.disabled = false;
+                } else {
+                    appartamentoSelect.disabled = true;
+                }
+            });
+            
+            // Gestore pulsante applica filtri
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                paginationConfig.currentPage = 1;
+                filterFatture();
+            });
+            
+            // Gestore pulsante reset filtri
+            document.getElementById('resetFilters').addEventListener('click', function() {
+                document.getElementById('filterCondominio').value = '';
+                document.getElementById('filterAppartamento').value = '';
+                document.getElementById('filterAppartamento').disabled = true;
+                document.getElementById('filterPeriodo').value = '';
+                
+                paginationConfig.currentPage = 1;
+                filterFatture();
+            });
+            
+            // Gestori paginazione
+            document.getElementById('prevPage').addEventListener('click', function() {
+                if (paginationConfig.currentPage > 1) {
+                    paginationConfig.currentPage--;
+                    renderFatture();
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', function() {
+                if (paginationConfig.currentPage < paginationConfig.totalPages) {
+                    paginationConfig.currentPage++;
+                    renderFatture();
+                }
+            });
+            
+            // Gestore form invio email
+            document.getElementById('emailForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+            });
+            
+            document.getElementById('sendEmailBtn').addEventListener('click', function() {
+                inviaEmailFattura();
+            });
+            
+            // Gestore form modifica stato
+            document.getElementById('statoForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+            });
+            
+            document.getElementById('updateStatusBtn').addEventListener('click', function() {
+                aggiornaStatoFattura();
+            });
+            
+            // Carica dati
+            caricaDati();
         });
-        
-        // Aggiungi event listener per il pulsante genera
-        generateButton.addEventListener('click', function() {
-            generaFattura();
-        });
-        
-        // Aggiungi event listener per il pulsante stampa
-        printButton.addEventListener('click', function() {
-            window.print();
-        });
-        
-        // --- Inizializzazione ---
-        // Imposta data default (oggi)
-        dataFineInput.valueAsDate = new Date();
-        
-        // Carica dati iniziali
-        caricaDatiIniziali();
-        
-        // --- Funzioni principali ---
         
         /**
-         * Carica tutti i dati necessari all'inizializzazione
+         * Carica tutti i dati necessari
          */
-        function caricaDatiIniziali() {
-            console.log("Avvio caricamento dati iniziali...");
+        function caricaDati() {
+            // Mostra messaggio di caricamento
+            showStatus("Caricamento dati in corso...", "alert-info");
             
-            // 1. Carica l'elenco dei Condomini
+            // 1. Carica condomini
             google.script.run
-                .withSuccessHandler(function(condominiList) {
-                    console.log("Condomini ricevuti:", condominiList);
-                    setupCondominiDropdown(condominiList);
+                .withSuccessHandler(function(condomini) {
+                    allCondomini = condomini || [];
+                    popolaFiltroCondomini();
                 })
-                .withFailureHandler(function(error) {
-                    console.error("Errore caricamento condomini:", error);
-                    gestisciErroreGenerale(error);
-                })
+                .withFailureHandler(handleError)
                 .getCondominiList();
-            
-            // 2. Carica TUTTI i dati degli appartamenti e memorizzali
+                
+            // 2. Carica appartamenti
             google.script.run
-                .withSuccessHandler(function(appartamentiData) {
-                    console.log("Dati appartamenti ricevuti:", appartamentiData);
-                    storeAllApartmentData(appartamentiData);
+                .withSuccessHandler(function(appartamenti) {
+                    allAppartamenti = appartamenti || [];
                 })
-                .withFailureHandler(function(error) {
-                    console.error("Errore caricamento appartamenti:", error);
-                    gestisciErroreGenerale(error);
-                })
+                .withFailureHandler(handleError)
                 .getAppartamentiData();
                 
-            // 3. Carica anche le impostazioni globali
+            // 3. Carica fatture
             google.script.run
-                .withSuccessHandler(function(settings) {
-                    console.log("Impostazioni ricevute");
-                    storeSettings(settings);
+                .withSuccessHandler(function(fatture) {
+                    allFatture = fatture || [];
+                    hideStatus();
+                    updateSummaryStats();
+                    filterFatture();
                 })
-                .withFailureHandler(function(error) {
-                    console.error("Errore caricamento impostazioni:", error);
-                    gestisciErroreGenerale(error);
-                })
-                .leggiImpostazioniComplete();
+                .withFailureHandler(handleError)
+                .getFattureList();
         }
         
         /**
-         * Gestisce il cambio di selezione del condominio
+         * Aggiorna le statistiche riepilogative
          */
-        function handleCondominioChange() {
-            const selectedCondominioId = condominioSelect.value;
-            console.log("Condominio selezionato:", selectedCondominioId);
+        function updateSummaryStats() {
+            if (!allFatture.length) return;
             
-            // Nascondi messaggi precedenti
-            hideStatus();
+            const totalInvoices = allFatture.length;
+            const paidInvoices = allFatture.filter(f => f.stato === 'Pagata').length;
+            const pendingInvoices = allFatture.filter(f => f.stato === 'Da Pagare').length;
+            const overdueInvoices = allFatture.filter(f => f.stato === 'Scaduta').length;
             
-            // Filtra gli appartamenti per il condominio selezionato
-            let filteredAppartamenti = [];
-            if (selectedCondominioId && allAppartamentiData.length > 0) {
-                filteredAppartamenti = allAppartamentiData.filter(app => 
-                    String(app.condominioId) === String(selectedCondominioId)
-                );
-            }
-            
-            // Popola il secondo dropdown con gli appartamenti filtrati
-            popolaDropdownAppartamenti(filteredAppartamenti);
-            
-            // Abilita/Disabilita il dropdown appartamenti
-            appartamentoSelect.disabled = !selectedCondominioId;
-            
-            // Feedback se non ci sono appartamenti nel condominio selezionato
-            if (selectedCondominioId && filteredAppartamenti.length === 0) {
-                displayStatus(`Nessun appartamento trovato per il condominio "${selectedCondominioId}"`, "error");
-            }
+            document.getElementById('total-invoices').textContent = totalInvoices;
+            document.getElementById('paid-invoices').textContent = paidInvoices;
+            document.getElementById('pending-invoices').textContent = pendingInvoices;
+            document.getElementById('overdue-invoices').textContent = overdueInvoices;
         }
         
         /**
-         * Gestisce la generazione della fattura
+         * Popola il filtro dei condomini
          */
-        function generaFattura() {
-            const idAppartamentoSelezionato = appartamentoSelect.value;
-            const dataFine = dataFineInput.value;
-            const idCondominioSelezionato = condominioSelect.value;
-            const metodoPagamento = metodoPagamentoSelect.value;
+        function popolaFiltroCondomini() {
+            const select = document.getElementById('filterCondominio');
+            select.innerHTML = '<option value="">Tutti i condomini</option>';
             
-            // Validazione input
-            if (!idCondominioSelezionato) { 
-                displayStatus("Errore: Seleziona prima un Condominio.", "error"); 
-                return; 
-            }
-            if (!idAppartamentoSelezionato) { 
-                displayStatus("Errore: Seleziona un Appartamento.", "error"); 
-                return; 
-            }
-            if (!dataFine) { 
-                displayStatus("Errore: Seleziona una Data Fine Periodo.", "error"); 
-                return; 
-            }
-            if (!metodoPagamento) { 
-                displayStatus("Errore: Seleziona un Metodo di Pagamento.", "error"); 
-                return; 
-            }
-            
-            console.log(`Tentativo generazione fattura per App ID: ${idAppartamentoSelezionato} fino al ${dataFine}, pagamento: ${metodoPagamento}`);
-            displayStatus("Generazione fattura in corso...", "loading");
-            
-            // Imposta stato di caricamento
-            generateButton.setAttribute('aria-busy', 'true');
-            generateButton.disabled = true;
-            
-            // Nascondi anteprima esistente
-            printButton.style.display = 'none';
-            invoicePreviewDiv.style.display = 'none';
-            
-            // Chiama la funzione backend
-            google.script.run
-                .withSuccessHandler(function(risultato) {
-                    gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento);
-                })
-                .withFailureHandler(function(error) {
-                    gestisciErroreGenerale(error);
-                })
-                .generaERegistraFattura(idAppartamentoSelezionato, dataFine, metodoPagamento);
-        }
-        
-        // --- Funzioni di supporto ---
-        
-        /**
-         * Memorizza le impostazioni globali
-         */
-        function storeSettings(settings) {
-            console.log("Impostazioni ricevute:", settings);
-            
-            if (settings && settings.error) {
-                // Mostra l'errore all'utente
-                displayStatus(`Errore: ${settings.error}`, "error");
-            }
-            
-            impostazioniGlobali = settings || {};
+            allCondomini.forEach(condominio => {
+                const option = document.createElement('option');
+                option.value = condominio.id;
+                option.textContent = condominio.nome;
+                select.appendChild(option);
+            });
         }
         
         /**
-         * Popola il dropdown dei Condomini
+         * Filtra e visualizza le fatture in base ai criteri selezionati
          */
-        // DENTRO Fatture.html -> SOSTITUISCI LA VECCHIA setupCondominiDropdown CON QUESTA:
-
-/**
- * Popola il dropdown dei Condomini
- * @param {Array<Object>} condominiList - Array di oggetti {id, nome}
- */
-function setupCondominiDropdown(condominiList) { // Usa nome parametro chiaro
-    console.log("Configurazione dropdown condomini...");
-    const condominioSelect = document.getElementById('condominioSelect'); 
-    
-    // Reset del dropdown
-    condominioSelect.innerHTML = ''; 
-    
-    if (condominiList && condominiList.length > 0) {
-        // Aggiungi l'opzione default
-        const defaultOption = document.createElement('option');
-        defaultOption.value = "";
-        defaultOption.textContent = "--- Seleziona Condominio ---";
-        condominioSelect.appendChild(defaultOption);
-        
-        // Aggiungi le opzioni dei condomini CORRETTAMENTE
-        condominiList.forEach(condominio => { // Itera sull'oggetto 'condominio'
-            const option = document.createElement('option');
-            // --- CORREZIONI CHIAVE ---
-            option.value = condominio.id;       // Assegna la PROPRIETA' 'id' al valore
-            option.textContent = condominio.nome; // Assegna la PROPRIETA' 'nome' al testo visibile
-            // -------------------------
-            condominioSelect.appendChild(option);
-        });
-        console.log(`Popolati ${condominiList.length} condomini`);
-    } else {
-        // Nessun condominio trovato
-        const option = document.createElement('option');
-        option.value = "";
-        option.textContent = "Nessun condominio trovato";
-        condominioSelect.appendChild(option);
-        
-        // Mostra un messaggio di errore se necessario
-        if (typeof displayStatus === 'function') {
-            displayStatus("Nessun condominio trovato nel foglio 'Appartamenti'. Verifica i dati.", "error");
-        } else {
-            console.error("Nessun condominio trovato nel foglio 'Appartamenti'.");
-        }
-    }
-}
-        
-        /**
-         * Memorizza i dati di tutti gli appartamenti
-         */
-        function storeAllApartmentData(data) {
-            allAppartamentiData = data || [];
-            console.log(`Memorizzati ${allAppartamentiData.length} appartamenti in totale`);
-        }
-        
-        /**
-         * Popola il dropdown degli Appartamenti con i dati filtrati
-         */
-        function popolaDropdownAppartamenti(appartamenti) {
-            console.log("Popolamento dropdown appartamenti...");
+        function filterFatture() {
+            const condominioId = document.getElementById('filterCondominio').value;
+            const appartamentoId = document.getElementById('filterAppartamento').value;
+            const periodoFilter = document.getElementById('filterPeriodo').value;
             
-            // Pulisci opzioni precedenti e imposta placeholder
-            appartamentoSelect.innerHTML = '<option value="">--- Seleziona Appartamento ---</option>';
+            // Filtra per stato (tab corrente)
+            let filteredFatture = [...allFatture];
             
-            if (appartamenti && appartamenti.length > 0) {
-                // Ordina per nome display
-                appartamenti.sort((a, b) => String(a.nome).localeCompare(String(b.nome)));
-                
-                appartamenti.forEach(app => {
-                    const option = document.createElement('option');
-                    option.value = app.id;
-                    option.textContent = app.nome;
-                    appartamentoSelect.appendChild(option);
+            if (currentTab === 'da-pagare') {
+                filteredFatture = filteredFatture.filter(f => f.stato === 'Da Pagare');
+            } else if (currentTab === 'pagate') {
+                filteredFatture = filteredFatture.filter(f => f.stato === 'Pagata');
+            } else if (currentTab === 'scadute') {
+                filteredFatture = filteredFatture.filter(f => f.stato === 'Scaduta');
+            }
+            
+            // Filtra per condominio
+            if (condominioId) {
+                filteredFatture = filteredFatture.filter(f => {
+                    const appartamento = allAppartamenti.find(a => a.id === f.idAppartamento);
+                    return appartamento && String(appartamento.condominioId) === String(condominioId);
                 });
-                console.log(`Popolati ${appartamenti.length} appartamenti nel dropdown`);
-            }
-        }
-        
-        /**
-         * Gestisce il risultato della generazione fattura
-         */
-        function gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento) {
-            // Ripristina stato bottone
-            generateButton.removeAttribute('aria-busy');
-            generateButton.disabled = false;
-            
-            if (!risultato || risultato.error) {
-                // Gestione errori
-                displayStatus(risultato?.error || "Errore sconosciuto nella generazione della fattura.", "error");
-                return;
             }
             
-            // Aggiungi il metodo di pagamento ai risultati
-            risultato.metodoPagamento = metodoPagamento;
-            
-            // Successo
-            displayStatus(`Fattura ${risultato.id} generata con successo!`, "success");
-            console.log("Fattura generata:", risultato);
-            
-            // Popola e visualizza anteprima
-            popolaAnteprimaFattura(risultato);
-        }
-        
-        /**
-         * Restituisce l'icona appropriata per il metodo di pagamento
-         */
-        function getPaymentMethodIcon(method) {
-            switch(method) {
-                case 'Bonifico': return 'fa-university';
-                case 'Contanti': return 'fa-money-bill-wave';
-                case 'CartaCredito': return 'fa-credit-card';
-                case 'CartaDebito': return 'fa-credit-card';
-                case 'Assegno': return 'fa-money-check';
-                case 'PayPal': return 'fa-paypal';
-                default: return 'fa-credit-card';
-            }
-        }
-        
-        /**
-         * Popola l'anteprima della fattura
-         */
-        function popolaAnteprimaFattura(dati) {
-            if (!dati) {
-                console.error("Dati fattura vuoti o non validi");
-                return;
+            // Filtra per appartamento
+            if (appartamentoId) {
+                filteredFatture = filteredFatture.filter(f => f.idAppartamento === appartamentoId);
             }
             
-            console.log("Popolamento anteprima fattura...");
-            
-            // Mostro l'anteprima e bottone stampa
-            invoicePreviewDiv.style.display = 'block';
-            printButton.style.display = 'block';
-            
-            // Formatta le date in formato italiano
-            const formatDate = (dateStr) => {
-                if (!dateStr) return "N/D";
-                const dateParts = dateStr.split('-');
-                if (dateParts.length === 3) {
-                    return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            // Filtra per periodo
+            if (periodoFilter) {
+                const today = new Date();
+                let startDate = new Date();
+                
+                if (periodoFilter === 'current-month') {
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                } else if (periodoFilter === 'last-month') {
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                } else if (periodoFilter === 'last-3-months') {
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+                } else if (periodoFilter === 'last-6-months') {
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+                } else if (periodoFilter === 'last-year') {
+                    startDate = new Date(today.getFullYear() - 1, today.getMonth(), 1);
                 }
-                return dateStr;
-            };
+                
+                filteredFatture = filteredFatture.filter(f => {
+                    const dataEmissione = new Date(f.dataEmissione);
+                    return dataEmissione >= startDate && dataEmissione <= today;
+                });
+            }
             
-            // Preparazione dati formattati per la visualizzazione
-            const formattedData = {
-                id: dati.id || "N/D",
-                intestatario: dati.intestatario || "N/D",
-                indirizzo: dati.indirizzo || "N/D",
-                cfPiva: dati.cfPiva || "N/D",
-                dataInizio: formatDate(dati.dataInizio),
-                dataFine: formatDate(dati.dataFine),
-                dataEmissione: formatDate(dati.dataEmissione),
-                dataScadenza: formatDate(dati.dataScadenza),
-                consumoElettrico: (dati.consumoElettrico !== undefined ? dati.consumoElettrico.toLocaleString('it-IT') : "0") + " kWh",
-                importoElettrico: (dati.importoElettrico !== undefined ? dati.importoElettrico.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                consumoAcqua: (dati.consumoAcqua !== undefined ? dati.consumoAcqua.toLocaleString('it-IT') : "0") + " m³",
-                importoAcqua: (dati.importoAcqua !== undefined ? dati.importoAcqua.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                consumoGas: (dati.consumoGas !== undefined ? dati.consumoGas.toLocaleString('it-IT') : "0") + " m³",
-                importoGas: (dati.importoGas !== undefined ? dati.importoGas.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                importoTotale: (dati.importoTotale !== undefined ? dati.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00") + " €",
-                stato: dati.stato || "Non Definito",
-                metodoPagamento: dati.metodoPagamento || "Non specificato",
-                aziendaInfo: dati.aziendaInfo || {},
-            };
-            
-            // Icona per il metodo di pagamento
-            const paymentIcon = getPaymentMethodIcon(formattedData.metodoPagamento);
-            
-            // Template HTML per l'anteprima della fattura
-            const invoiceHtml = `
-                <div id="invoiceHeader">
-                    <h2><i class="fas fa-file-invoice"></i> FATTURA ${formattedData.id}</h2>
-                    <p>${formattedData.aziendaInfo.nome || ""}<br>
-                    ${formattedData.aziendaInfo.indirizzo || ""}<br>
-                    P.IVA/CF: ${formattedData.aziendaInfo.pivaCf || ""}</p>
-                </div>
-                
-                <div class="invoice-details">
-                    <div class="invoice-details-box">
-                        <h4><i class="fas fa-user"></i> Intestatario</h4>
-                        <p><strong>${formattedData.intestatario}</strong><br>
-                        ${formattedData.indirizzo}<br>
-                        CF/P.IVA: ${formattedData.cfPiva}</p>
-                    </div>
-                    <div class="invoice-details-box">
-                        <h4><i class="fas fa-info-circle"></i> Dettagli Fattura</h4>
-                        <p>
-                        <strong>Stato:</strong> ${formattedData.stato}<br>
-                        <strong>Data Emissione:</strong> ${formattedData.dataEmissione}<br>
-                        <strong>Data Scadenza:</strong> ${formattedData.dataScadenza}<br>
-                        <strong>Periodo:</strong> ${formattedData.dataInizio} - ${formattedData.dataFine}</p>
-                    </div>
-                </div>
-                
-                <div class="payment-method">
-                    <h4><i class="fas fa-credit-card"></i> Metodo di Pagamento</h4>
-                    <p><i class="fas ${paymentIcon} payment-method-icon"></i> <strong>${formattedData.metodoPagamento}</strong></p>
-                </div>
-                
-                <h4><i class="fas fa-shopping-cart"></i> Consumi e Importi</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Servizio</th>
-                            <th>Consumo</th>
-                            <th>Importo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><i class="fas fa-bolt"></i> Energia Elettrica</td>
-                            <td>${formattedData.consumoElettrico}</td>
-                            <td>${formattedData.importoElettrico}</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-tint"></i> Acqua</td>
-                            <td>${formattedData.consumoAcqua}</td>
-                            <td>${formattedData.importoAcqua}</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-fire"></i> Gas</td>
-                            <td>${formattedData.consumoGas}</td>
-                            <td>${formattedData.importoGas}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><strong>TOTALE</strong></td>
-                            <td><strong>${formattedData.importoTotale}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <div style="margin-top: 2rem;">
-                    <h4><i class="fas fa-money-check-alt"></i> Modalità di Pagamento</h4>
-                    <p><strong>IBAN:</strong> ${formattedData.aziendaInfo.iban || "N/D"}<br>
-                    <strong>Intestato a:</strong> ${formattedData.aziendaInfo.nome || "N/D"}</p>
-                </div>
-                
-                <footer>
-                    <p><strong>Note:</strong> ${formattedData.aziendaInfo.note || ""}</p>
-                    <p><i class="fas fa-envelope"></i> Email: ${formattedData.aziendaInfo.email || ""} - <i class="fas fa-phone"></i> Tel: ${formattedData.aziendaInfo.telefono || ""}</p>
-                    <p style="text-align: center; margin-top: 1rem; font-size: 0.8em; color: #999;">
-                        <i class="fas fa-info-circle"></i> Documento generato automaticamente dal sistema di gestione condomini.
-                    </p>
-                </footer>
-            `;
-            
-            // Aggiorna contenuto dell'anteprima
-            invoicePreviewDiv.innerHTML = invoiceHtml;
+            // Renderizza le fatture filtrate
+            renderFatture(filteredFatture);
         }
         
         /**
-         * Mostra un messaggio di stato
+         * Renderizza le fatture nella tabella con paginazione
          */
-        function displayStatus(message, type) {
-            if (!message) {
-                hideStatus();
+        function renderFatture(fatture = allFatture) {
+            const tbody = document.getElementById('fattureBody');
+            
+            if (!fatture || fatture.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Nessuna fattura trovata</td></tr>';
+                
+                // Aggiorna info paginazione
+                document.getElementById('start-entry').textContent = '0';
+                document.getElementById('end-entry').textContent = '0';
+                document.getElementById('total-entries').textContent = '0';
+                document.getElementById('current-page').textContent = '1';
+                
+                // Disabilita pulsanti paginazione
+                document.getElementById('prevPage').disabled = true;
+                document.getElementById('nextPage').disabled = true;
+                
                 return;
             }
             
-            console.log(`Status message (${type}): ${message}`);
+            // Ordina per data di emissione (più recenti prima)
+            fatture.sort((a, b) => new Date(b.dataEmissione) - new Date(a.dataEmissione));
             
-            statusMessageDiv.textContent = message;
-            statusMessageDiv.style.display = 'block';
+            // Calcola paginazione
+            const totalItems = fatture.length;
+            paginationConfig.totalPages = Math.ceil(totalItems / paginationConfig.itemsPerPage);
             
-            // Rimuovi tutte le classi di stato
-            statusMessageDiv.classList.remove('error', 'success', 'loading');
-            
-            // Aggiungi la classe appropriata
-            if (type) {
-                statusMessageDiv.classList.add(type);
+            // Assicurati che la pagina corrente sia valida
+            if (paginationConfig.currentPage > paginationConfig.totalPages) {
+                paginationConfig.currentPage = paginationConfig.totalPages;
             }
+            
+            // Calcola indici per la pagina corrente
+            const startIndex = (paginationConfig.currentPage - 1) * paginationConfig.itemsPerPage;
+            const endIndex = Math.min(startIndex + paginationConfig.itemsPerPage, totalItems);
+            
+            // Aggiorna info paginazione
+            document.getElementById('start-entry').textContent = totalItems > 0 ? startIndex + 1 : '0';
+            document.getElementById('end-entry').textContent = endIndex;
+            document.getElementById('total-entries').textContent = totalItems;
+            document.getElementById('current-page').textContent = paginationConfig.currentPage;
+            
+            // Abilita/Disabilita pulsanti paginazione
+            document.getElementById('prevPage').disabled = paginationConfig.currentPage <= 1;
+            document.getElementById('nextPage').disabled = paginationConfig.currentPage >= paginationConfig.totalPages;
+            
+            // Estrai le fatture per la pagina corrente
+            const fatturePerPage = fatture.slice(startIndex, endIndex);
+            
+            tbody.innerHTML = '';
+            fatturePerPage.forEach(fattura => {
+                // Trova il nome del condominio
+                const appartamento = allAppartamenti.find(a => a.id === fattura.idAppartamento);
+                const condominio = allCondomini.find(c => 
+                    appartamento && String(c.id) === String(appartamento?.condominioId)
+                );
+                
+                // Formatta date
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return "N/D";
+                    const dateParts = dateStr.split('-');
+                    if (dateParts.length === 3) {
+                        return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                    }
+                    return dateStr;
+                };
+                
+                // Determina classe e icona CSS per lo stato
+                let statusClass = '';
+                let statusIcon = '';
+                
+                if (fattura.stato === 'Pagata') {
+                    statusClass = 'status-pagata';
+                    statusIcon = 'fa-check-circle';
+                } else if (fattura.stato === 'Da Pagare') {
+                    statusClass = 'status-da-pagare';
+                    statusIcon = 'fa-clock';
+                } else if (fattura.stato === 'Scaduta') {
+                    statusClass = 'status-scaduta';
+                    statusIcon = 'fa-exclamation-circle';
+                } else {
+                    statusIcon = 'fa-times-circle';
+                }
+                
+                // Crea riga tabella
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${fattura.id}</strong></td>
+                    <td>${condominio ? condominio.nome : 'N/D'}</td>
+                    <td>${fattura.intestatario || 'N/D'}</td>
+                    <td>${formatDate(fattura.dataEmissione)}</td>
+                    <td>${formatDate(fattura.dataScadenza)}</td>
+                    <td><strong>${fattura.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</strong></td>
+                    <td>
+                        <span class="status-badge ${statusClass}">
+                            <i class="fas ${statusIcon}"></i> ${fattura.stato}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button type="button" class="btn-action" title="Invia Email" onclick="openEmailModal('${fattura.id}')">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            <button type="button" class="btn-action btn-edit" title="Modifica Stato" onclick="openStatoModal('${fattura.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn-action btn-view" title="Visualizza PDF" onclick="visualizzaPdf('${fattura.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        /**
+         * Apre il modale per l'invio email
+         */
+        function openEmailModal(fatturaId) {
+            const fattura = allFatture.find(f => f.id === fatturaId);
+            if (!fattura) return;
+            
+            // Popola il modale
+            document.getElementById('modalFatturaId').textContent = fattura.id;
+            document.getElementById('modalIntestatario').textContent = fattura.intestatario;
+            document.getElementById('emailFatturaId').value = fattura.id;
+            document.getElementById('emailDestinatario').value = fattura.email || '';
+            document.getElementById('emailOggetto').value = `Fattura ${fattura.id} - ${fattura.intestatario}`;
+            
+            // Testo predefinito per l'email
+            const testoPredefinitoEmail = `Gentile ${fattura.intestatario},
+
+In allegato trova la fattura ${fattura.id} relativa al periodo ${formatDate(fattura.dataInizio)} - ${formatDate(fattura.dataFine)}.
+
+Importo totale: ${fattura.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €
+Scadenza pagamento: ${formatDate(fattura.dataScadenza)}
+Metodo di pagamento: ${fattura.metodoPagamento || 'N/D'}
+
+Per qualsiasi chiarimento, non esiti a contattarci.
+
+Cordiali saluti,
+Amministrazione Condominio`;
+
+            document.getElementById('emailMessaggio').value = testoPredefinitoEmail;
+            
+            // Mostra il modale
+            document.getElementById('emailModal').style.display = 'block';
+        }
+        
+        /**
+         * Apre il modale per la modifica dello stato
+         */
+        function openStatoModal(fatturaId) {
+            const fattura = allFatture.find(f => f.id === fatturaId);
+            if (!fattura) return;
+            
+            // Popola il modale
+            document.getElementById('modalStatoFatturaId').textContent = fattura.id;
+            document.getElementById('modalStatoIntestatario').textContent = fattura.intestatario;
+            
+            // Determina classe e icona CSS per lo stato attuale
+            let statusClass = '';
+            let statusIcon = '';
+            
+            if (fattura.stato === 'Pagata') {
+                statusClass = 'status-pagata';
+                statusIcon = 'fa-check-circle';
+            } else if (fattura.stato === 'Da Pagare') {
+                statusClass = 'status-da-pagare';
+                statusIcon = 'fa-clock';
+            } else if (fattura.stato === 'Scaduta') {
+                statusClass = 'status-scaduta';
+                statusIcon = 'fa-exclamation-circle';
+            } else {
+                statusIcon = 'fa-times-circle';
+            }
+            
+            const statoAttuale = document.getElementById('modalStatoAttuale');
+            statoAttuale.className = `status-badge ${statusClass}`;
+            statoAttuale.innerHTML = `<i class="fas ${statusIcon}"></i> ${fattura.stato}`;
+            
+            document.getElementById('statoFatturaId').value = fattura.id;
+            document.getElementById('statoNuovo').value = fattura.stato;
+            
+            // Mostra il modale
+            document.getElementById('statoModal').style.display = 'block';
+        }
+        
+        /**
+         * Chiude un modale
+         */
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            
+            // Reset status message
+            if (modalId === 'emailModal') {
+                document.getElementById('emailStatusMsg').style.display = 'none';
+            } else if (modalId === 'statoModal') {
+                document.getElementById('statoStatusMsg').style.display = 'none';
+            }
+        }
+        
+        /**
+         * Invia la fattura via email
+         */
+        function inviaEmailFattura() {
+            const fatturaId = document.getElementById('emailFatturaId').value;
+            const destinatario = document.getElementById('emailDestinatario').value;
+            const cc = document.getElementById('emailCc').value;
+            const oggetto = document.getElementById('emailOggetto').value;
+            const messaggio = document.getElementById('emailMessaggio').value;
+            
+            // Validazione
+            if (!destinatario) {
+                showModalStatus('emailStatusMsg', "Inserisci l'indirizzo email del destinatario", "alert-danger");
+                return;
+            }
+            
+            if (!oggetto) {
+                showModalStatus('emailStatusMsg', "Inserisci l'oggetto dell'email", "alert-danger");
+                return;
+            }
+            
+            // Mostra stato di caricamento
+            showModalStatus('emailStatusMsg', "Invio email in corso...", "alert-info");
+            
+            // Disabilita pulsante
+            document.getElementById('sendEmailBtn').disabled = true;
+            
+            // Dati email
+            const emailData = {
+                fatturaId: fatturaId,
+                destinatario: destinatario,
+                cc: cc,
+                oggetto: oggetto,
+                messaggio: messaggio
+            };
+            
+            // Invia richiesta al backend
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    document.getElementById('updateStatusBtn').disabled = false;
+                    
+                    if (response.success) {
+                        showModalStatus('statoStatusMsg', "Stato aggiornato con successo!", "alert-success");
+                        
+                        // Aggiorna la fattura nella lista
+                        const fattura = allFatture.find(f => f.id === fatturaId);
+                        if (fattura) {
+                            fattura.stato = nuovoStato;
+                        }
+                        
+                        // Aggiorna la visualizzazione
+                        updateSummaryStats();
+                        filterFatture();
+                        
+                        // Chiudi automaticamente dopo 2 secondi
+                        setTimeout(() => closeModal('statoModal'), 2000);
+                    } else {
+                        showModalStatus('statoStatusMsg', "Errore: " + (response.error || "Errore sconosciuto"), "alert-danger");
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    document.getElementById('updateStatusBtn').disabled = false;
+                    showModalStatus('statoStatusMsg', "Errore: " + (error.message || "Errore sconosciuto"), "alert-danger");
+                })
+                .aggiornaStatoFattura(statoData);
+        }
+        
+        /**
+         * Visualizza il PDF della fattura
+         */
+        function visualizzaPdf(fatturaId) {
+            // Apri finestra con il PDF
+            const pdfUrl = `<?= getScriptUrl() ?>?view=pdf&id=${fatturaId}`;
+            window.open(pdfUrl, '_blank');
+        }
+        
+        /**
+         * Mostra un messaggio di stato nei modali
+         */
+        function showModalStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            if (!message) {
+                element.style.display = 'none';
+                return;
+            }
+            
+            // Rimuovi tutte le classi di alert
+            element.className = 'alert';
+            
+            // Imposta l'icona e il messaggio in base al tipo
+            let iconClass = 'fa-info-circle';
+            
+            if (type === 'alert-success') {
+                iconClass = 'fa-check-circle';
+                element.classList.add('alert-success');
+            } else if (type === 'alert-danger') {
+                iconClass = 'fa-exclamation-circle';
+                element.classList.add('alert-danger');
+            } else if (type === 'alert-warning') {
+                iconClass = 'fa-exclamation-triangle';
+                element.classList.add('alert-warning');
+            } else if (type === 'alert-info') {
+                iconClass = 'fa-info-circle';
+                element.classList.add('alert-info');
+            }
+            
+            if (type === 'alert-info' && message.toLowerCase().includes('caricamento')) {
+                element.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        <div class="loader" style="margin-right: 0.75rem;"></div>
+                        <span>${message}</span>
+                    </div>
+                `;
+            } else {
+                element.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        <i class="fas ${iconClass}" style="margin-right: 0.75rem;"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+            }
+            
+            element.style.display = 'block';
+        }
+        
+        /**
+         * Mostra un messaggio di stato nella pagina principale
+         */
+        function showStatus(message, type) {
+            const statusMsg = document.getElementById('statusMessage');
+            if (!statusMsg) return;
+            
+            if (!message) {
+                statusMsg.style.display = 'none';
+                return;
+            }
+            
+            // Rimuovi tutte le classi di alert
+            statusMsg.className = 'alert';
+            
+            // Imposta l'icona e il messaggio in base al tipo
+            let iconClass = 'fa-info-circle';
+            
+            if (type === 'alert-success') {
+                iconClass = 'fa-check-circle';
+                statusMsg.classList.add('alert-success');
+            } else if (type === 'alert-danger') {
+                iconClass = 'fa-exclamation-circle';
+                statusMsg.classList.add('alert-danger');
+            } else if (type === 'alert-warning') {
+                iconClass = 'fa-exclamation-triangle';
+                statusMsg.classList.add('alert-warning');
+            } else if (type === 'alert-info') {
+                iconClass = 'fa-info-circle';
+                statusMsg.classList.add('alert-info');
+            }
+            
+            const statusMessageText = document.getElementById('statusMessageText');
+            
+            if (type === 'alert-info' && message.toLowerCase().includes('caricamento')) {
+                statusMsg.innerHTML = `
+                    <div class="loader" style="margin-right: 0.75rem;"></div>
+                    <span id="statusMessageText">${message}</span>
+                `;
+            } else {
+                statusMsg.innerHTML = `
+                    <i class="fas ${iconClass} alert-icon"></i>
+                    <span id="statusMessageText">${message}</span>
+                `;
+            }
+            
+            statusMsg.style.display = 'flex';
         }
         
         /**
          * Nasconde il messaggio di stato
          */
         function hideStatus() {
-            statusMessageDiv.style.display = 'none';
+            const statusMsg = document.getElementById('statusMessage');
+            if (statusMsg) {
+                statusMsg.style.display = 'none';
+            }
         }
         
         /**
          * Gestisce gli errori generali
          */
-        function gestisciErroreGenerale(error) {
+        function handleError(error) {
             console.error("Errore:", error);
-            
-            // Ripristina stato bottone
-            generateButton.removeAttribute('aria-busy');
-            generateButton.disabled = false;
-            
-            displayStatus(error?.message || "Si è verificato un errore durante l'operazione.", "error");
+            showStatus("Errore: " + (error.message || "Si è verificato un errore imprevisto"), "alert-danger");
         }
-    });
+        
+        /**
+         * Formatta una data in formato italiano
+         */
+        function formatDate(dateStr) {
+            if (!dateStr) return "N/D";
+            const dateParts = dateStr.split('-');
+            if (dateParts.length === 3) {
+                return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            }
+            return dateStr;
+        }
     </script>
 </body>
 </html>
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    document.getElementById('sendEmailBtn').disabled = false;
+                    
+                    if (response.success) {
+                        showModalStatus('emailStatusMsg', "Email inviata con successo!", "alert-success");
+                        // Chiudi automaticamente dopo 2 secondi
+                        setTimeout(() => closeModal('emailModal'), 2000);
+                    } else {
+                        showModalStatus('emailStatusMsg', "Errore: " + (response.error || "Errore sconosciuto"), "alert-danger");
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    document.getElementById('sendEmailBtn').disabled = false;
+                    showModalStatus('emailStatusMsg', "Errore: " + (error.message || "Errore sconosciuto"), "alert-danger");
+                })
+                .inviaFatturaViaEmail(emailData);
+        }
+        
+        /**
+         * Aggiorna lo stato della fattura
+         */
+        function aggiornaStatoFattura() {
+            const fatturaId = document.getElementById('statoFatturaId').value;
+            const nuovoStato = document.getElementById('statoNuovo').value;
+            const note = document.getElementById('statoNote').value;
+            
+            // Validazione
+            if (!nuovoStato) {
+                showModalStatus('statoStatusMsg', "Seleziona il nuovo stato della fattura", "alert-danger");
+                return;
+            }
+            
+            // Mostra stato di caricamento
+            showModalStatus('statoStatusMsg', "Aggiornamento stato in corso...", "alert-info");
+            
+            // Disabilita pulsante
+            document.getElementById('updateStatusBtn').disabled = true;
+            
+            // Dati per l'aggiornamento
+            const statoData = {
+                fatturaId: fatturaId,
+                stato: nuovoStato,
+                note: note
+            };
+            
+            // Invia richiesta al backend
