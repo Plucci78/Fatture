@@ -778,6 +778,24 @@
         <textarea id="noteImportanti" class="form-control" rows="2" 
                  placeholder="Inserisci eventuali note importanti che verranno evidenziate nella fattura..."></textarea>
     </div>
+    <div class="row" id="scontoContainer" style="margin-top: 1rem; background-color: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 3px solid var(--color-secondary);">
+    <div class="col-md-6 col-lg-3">
+        <div class="form-group">
+            <label for="scontoPercentuale" class="form-label">
+                <i class="fas fa-percent"></i> Sconto (%)
+            </label>
+            <input type="number" id="scontoPercentuale" class="form-control" min="0" max="100" step="0.5" placeholder="0">
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-9">
+        <div class="form-group">
+            <label for="motivoSconto" class="form-label">
+                <i class="fas fa-comment-dots"></i> Motivazione Sconto
+            </label>
+            <input type="text" id="motivoSconto" class="form-control" placeholder="Inserisci il motivo dello sconto...">
+        </div>
+    </div>
+</div>
 </div>
                     </div>
                     
@@ -887,6 +905,20 @@
     </h4>
     <div id="important-notes-content" style="font-size: 0.9rem; line-height: 1.4;">
         Si prega di notare che <strong>il pagamento deve essere effettuato entro la data di scadenza</strong>. In caso di ritardato pagamento verranno applicati interessi di mora come da regolamento condominiale. Per qualsiasi chiarimento sulla fattura, contattare l'amministratore.
+    </div>
+</div>
+<!-- Sezione Sconto (visibile solo se applicato) -->
+<div id="discount-section" style="display: none; margin-top: 1rem; margin-bottom: 1rem; border: 2px dashed var(--color-secondary); border-radius: 8px; padding: 12px; background-color: #fff5f5;">
+    <h4 style="margin-top: 0; margin-bottom: 0.5rem; color: var(--color-secondary); display: flex; align-items: center;">
+        <i class="fas fa-tag" style="margin-right: 8px;"></i> SCONTO APPLICATO
+    </h4>
+    <div style="font-size: 0.9rem; line-height: 1.4;">
+        <p style="margin-bottom: 0.5rem;">
+            <strong>Percentuale sconto:</strong> <span id="discount-percentage">5</span>%
+        </p>
+        <p style="margin-bottom: 0;">
+            <strong>Motivazione:</strong> <span id="discount-reason">Promozione speciale</span>
+        </p>
     </div>
 </div>
         
@@ -1052,7 +1084,8 @@
             const idCondominioSelezionato = condominioSelect.value;
             const metodoPagamento = metodoPagamentoSelect.value;
             const noteImportanti = document.getElementById('noteImportanti').value;  // 
-            
+            const scontoPercentuale = parseFloat(document.getElementById('scontoPercentuale').value) || 0;
+            const motivoSconto = document.getElementById('motivoSconto').value || "";
             // Validazione input
             if (!idCondominioSelezionato) { 
                 displayStatus("Errore: Seleziona prima un Condominio.", "alert-danger"); 
@@ -1085,13 +1118,13 @@
             // Chiama la funzione backend
             google.script.run
                 .withSuccessHandler(function(risultato) {
-                    gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento, noteImportanti);  // AGGIUNGI noteImportanti qui
+                    gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento, noteImportanti, scontoPercentuale, motivoSconto);  // AGGIUNGI noteImportanti qui
      
                 })
                 .withFailureHandler(function(error) {
                     gestisciErroreGenerale(error);
                 })
-                .generaERegistraFattura(idAppartamentoSelezionato, dataFine, metodoPagamento, noteImportanti);  // AGGIUNGI noteImportanti qui
+                .generaERegistraFattura(idAppartamentoSelezionato, dataFine, metodoPagamento, noteImportanti, scontoPercentuale, motivoSconto);  // AGGIUNGI noteImportanti qui
         }
         
         // --- Funzioni di supporto ---
@@ -1181,7 +1214,7 @@
         /**
          * Gestisce il risultato della generazione fattura
          */
-        function gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento, noteImportanti) {
+        function gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento, noteImportanti, scontoPercentuale, motivoSconto) {
             // Ripristina stato bottone
             generateButton.removeAttribute('aria-busy');
             generateButton.disabled = false;
@@ -1195,7 +1228,8 @@
             // Aggiungi il metodo di pagamento ai risultati
             risultato.metodoPagamento = metodoPagamento;
             risultato.noteImportanti = noteImportanti;  // AGGIUNGI QUESTA RIGA
-            
+            risultato.scontoPercentuale = scontoPercentuale || 0;
+            risultato.motivoSconto = motivoSconto || "";
             // Successo
             displayStatus(`Fattura ${risultato.id} generata con successo!`, "alert-success");
             console.log("Fattura generata:", risultato);
@@ -1286,8 +1320,19 @@
             // Note importanti
             if (dati.noteImportanti) {
                document.getElementById('important-notes-content').innerHTML = dati.noteImportanti;
-}
-            
+            }
+            // Gestione della sezione sconto
+          const discountSection = document.getElementById('discount-section');
+            if (dati.scontoPercentuale && dati.scontoPercentuale > 0) {
+              // Popola i dati dello sconto
+               document.getElementById('discount-percentage').textContent = formatNumber(dati.scontoPercentuale, 1);
+               document.getElementById('discount-reason').textContent = dati.motivoSconto || "Sconto applicato";
+    // Mostra la sezione
+               discountSection.style.display = 'block';
+            } else {
+    // Nascondi la sezione se non c'è sconto
+               discountSection.style.display = 'none';
+            }
             // Azienda
             if (dati.aziendaInfo) {
                 document.getElementById('company-name').textContent = dati.aziendaInfo.nome || "N/D";
