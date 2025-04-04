@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -572,74 +571,134 @@
         }
         
         /* Stampa ottimizzata */
-        @media print {
-            @page {
-                size: A4;
-                margin: 1cm;
-            }
-            
-            body {
-                background-color: white;
-                padding: 0;
-                margin: 0;
-                font-size: 12pt;
-            }
-            
-            .container, .card, main, .invoice-container {
-                max-width: none;
-                margin: 0;
-                padding: 0;
-                box-shadow: none;
-                border-radius: 0;
-            }
-            
-            .app-header, form, .btn, #statusMessage, #generateButton {
-                display: none !important;
-            }
-            
-            .invoice-header {
-                background: #3a6df0 !important;
-                color: white !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color-adjust: exact;
-            }
-            
-            .invoice-header::after {
-                display: none;
-            }
-            
-            .invoice-details-box, .payment-method {
-                border-left: 4px solid #3a6df0 !important;
-                background-color: #f9fafc !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color-adjust: exact;
-            }
-            
-            .invoice-table th {
-                background-color: #f9fafc !important;
-                border-bottom: 2px solid #3a6df0 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color-adjust: exact;
-            }
-            
-            .invoice-table tr:last-child td {
-                border-top: 2px solid #3a6df0 !important;
-                background-color: #f9fafc !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color-adjust: exact;
-            }
-            
-            .invoice-footer {
-                border-top: 1px dashed #e4e8f3 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color-adjust: exact;
-            }
-        }
+        /* Ottimizzazione per la stampa su singola pagina */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 0.5cm;
+    }
+    
+    body {
+        background-color: white;
+        padding: 0;
+        margin: 0;
+        font-size: 11pt;
+    }
+    
+    .container, .card, main, .invoice-container {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    
+    .app-header, form, .btn, #statusMessage, #generateButton, .card {
+        display: none !important;
+    }
+    
+    .invoice-container {
+        display: block !important;
+    }
+    
+    .invoice-header {
+        padding: 0.75rem;
+        background: #3a6df0 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    
+    .invoice-header::after {
+        display: none;
+    }
+    
+    .invoice-body {
+        padding: 0.75rem;
+    }
+    
+    .invoice-logo i {
+        font-size: 1.5rem;
+    }
+    
+    .invoice-title {
+        font-size: 1.5rem;
+    }
+    
+    .invoice-company {
+        font-size: 0.9rem;
+    }
+    
+    .invoice-details-box, .payment-method {
+        padding: 0.5rem !important;
+        border-left: 3px solid #3a6df0 !important;
+        background-color: #f9fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    
+    .invoice-details-box h4, .payment-method h4 {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .invoice-details-box p, .payment-method p {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .invoice-table {
+        font-size: 0.8rem;
+    }
+    
+    .invoice-table th {
+        padding: 0.4rem !important;
+        background-color: #f9fafc !important;
+        border-bottom: 1px solid #3a6df0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    
+    .invoice-table td {
+        padding: 0.4rem !important;
+        border-bottom: 1px solid #e4e8f3 !important;
+    }
+    
+    .invoice-table tr:last-child td {
+        border-top: 1px solid #3a6df0 !important;
+        background-color: #f9fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    
+    .qr-code-img {
+        width: 70px !important;
+        height: 70px !important;
+    }
+    
+    .qr-code-text {
+        font-size: 0.7rem !important;
+    }
+    
+    .invoice-footer {
+        margin-top: 0.4rem !important;
+        padding-top: 0.4rem !important;
+        border-top: 1px dashed #e4e8f3 !important;
+        font-size: 0.7rem !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    
+    h4 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -711,6 +770,15 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="col-md-6 col-lg-8">
+    <div class="form-group">
+        <label for="noteImportanti" class="form-label">
+            <i class="fas fa-exclamation-circle"></i> Note Importanti
+        </label>
+        <textarea id="noteImportanti" class="form-control" rows="2" 
+                 placeholder="Inserisci eventuali note importanti che verranno evidenziate nella fattura..."></textarea>
+    </div>
+</div>
                     </div>
                     
                     <div id="statusMessage" class="alert" style="display: none;"></div>
@@ -731,110 +799,127 @@
         </div>
         
         <!-- Nuova anteprima fattura con design moderno -->
-        <div id="invoicePreview" style="display: none;" class="invoice-container">
-            <div class="invoice-header">
-                <div class="invoice-logo">
-                    <i class="fas fa-file-invoice"></i>
-                    <div class="invoice-title">Fattura <span id="invoice-id">F-12345</span></div>
-                </div>
-                <div class="invoice-company">
-                    <div id="company-name">Nome Condominio S.p.A.</div>
-                    <div id="company-address">Via Roma 123, 00100 Roma</div>
-                    <div>P.IVA/CF: <span id="company-vat">IT12345678901</span></div>
-                </div>
+        <!-- Ottimizzato per la stampa su singola pagina -->
+<div id="invoicePreview" style="display: none;" class="invoice-container">
+    <div class="invoice-header">
+        <div class="invoice-logo">
+            <i class="fas fa-file-invoice"></i>
+            <div class="invoice-title">Fattura <span id="invoice-id">F-12345</span></div>
+        </div>
+        <div class="invoice-company">
+            <div id="company-name">Nome Condominio S.p.A.</div>
+            <div id="company-address">Via Roma 123, 00100 Roma</div>
+            <div>P.IVA/CF: <span id="company-vat">IT12345678901</span></div>
+        </div>
+    </div>
+    
+    <div class="invoice-body">
+        <!-- Organizzazione a due colonne per risparmiare spazio verticale -->
+        <div class="invoice-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="invoice-details-box" style="padding: 0.75rem;">
+                <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-user"></i> Intestatario</h4>
+                <p style="margin-bottom: 0.5rem;">
+                    <strong id="client-name">Mario Rossi</strong><br>
+                    <span id="client-address">Piano 3, Interno 8</span><br>
+                    CF/P.IVA: <span id="client-vat">RSSMRA80A01H501Z</span>
+                </p>
             </div>
             
-            <div class="invoice-body">
-                <div class="invoice-details">
-                    <div class="invoice-details-box">
-                        <h4><i class="fas fa-user"></i> Intestatario</h4>
-                        <p>
-                            <strong id="client-name">Mario Rossi</strong><br>
-                            <span id="client-address">Piano 3, Interno 8</span><br>
-                            CF/P.IVA: <span id="client-vat">RSSMRA80A01H501Z</span>
-                        </p>
-                    </div>
-                    
-                    <div class="invoice-details-box">
-                        <h4><i class="fas fa-info-circle"></i> Dettagli Fattura</h4>
-                        <p>
-                            <strong>Stato:</strong> <span id="invoice-status">Da Pagare</span><br>
-                            <strong>Data Emissione:</strong> <span id="invoice-date">01/04/2025</span><br>
-                            <strong>Data Scadenza:</strong> <span id="invoice-due-date">01/05/2025</span><br>
-                            <strong>Periodo:</strong> <span id="invoice-period">01/03/2025 - 31/03/2025</span>
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="payment-method">
-                    <h4><i class="fas fa-credit-card"></i> Metodo di Pagamento</h4>
-                    <p><i class="fas fa-university payment-method-icon"></i> <strong id="payment-method">Bonifico Bancario</strong></p>
-                </div>
-                
-                <h4 style="margin-top: 2rem;"><i class="fas fa-shopping-cart"></i> Consumi e Importi</h4>
-                <table class="invoice-table">
-                    <thead>
-                        <tr>
-                            <th>Servizio</th>
-                            <th>Consumo</th>
-                            <th>Importo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><i class="fas fa-bolt"></i> Energia Elettrica</td>
-                            <td id="consumption-electric">250 kWh</td>
-                            <td id="amount-electric">42,50 €</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-tint"></i> Acqua</td>
-                            <td id="consumption-water">18 m³</td>
-                            <td id="amount-water">36,00 €</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-fire"></i> Gas</td>
-                            <td id="consumption-gas">85 m³</td>
-                            <td id="amount-gas">93,50 €</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><strong>TOTALE</strong></td>
-                            <td id="amount-total"><strong>172,00 €</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="invoice-details-box">
-                            <h4><i class="fas fa-money-check-alt"></i> Coordinate Bancarie</h4>
-                            <p>
-                                <strong>IBAN:</strong> <span id="company-iban">IT60X0542811101000000123456</span><br>
-                                <strong>Intestato a:</strong> <span id="company-name-bank">Nome Condominio S.p.A.</span><br>
-                                <strong>Causale:</strong> Fattura <span id="invoice-id-ref">F-12345</span>
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="qr-code">
-                            <div class="qr-code-img"></div>
-                            <div class="qr-code-text">Scansiona per pagamento rapido</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="invoice-footer">
-                    <p><strong>Note:</strong> <span id="invoice-notes">Pagamento da effettuare entro la data di scadenza. In caso di ritardato pagamento verranno applicati gli interessi di mora come da regolamento condominiale.</span></p>
-                    <p>
-                        <i class="fas fa-envelope"></i> Email: <span id="company-email">admin@condominio.it</span> | 
-                        <i class="fas fa-phone"></i> Tel: <span id="company-phone">06 1234567</span>
-                    </p>
-                    <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #6b7a99;">
-                        <i class="fas fa-shield-alt"></i> Documento generato automaticamente dal sistema di gestione condomini.
-                    </p>
-                </div>
+            <div class="invoice-details-box" style="padding: 0.75rem;">
+                <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> Dettagli Fattura</h4>
+                <p style="margin-bottom: 0.5rem;">
+                    <strong>Stato:</strong> <span id="invoice-status">Da Pagare</span><br>
+                    <strong>Data Emissione:</strong> <span id="invoice-date">01/04/2025</span><br>
+                    <strong>Data Scadenza:</strong> <span id="invoice-due-date">01/05/2025</span><br>
+                    <strong>Periodo:</strong> <span id="invoice-period">01/03/2025 - 31/03/2025</span>
+                </p>
             </div>
         </div>
+        
+        <!-- Metodo di pagamento compattato -->
+        <div class="payment-method" style="padding: 0.75rem; margin-bottom: 0.75rem; margin-top: 0.75rem;">
+            <h4 style="margin-bottom: 0.25rem;"><i class="fas fa-credit-card"></i> Metodo di Pagamento</h4>
+            <p><i class="fas fa-university payment-method-icon"></i> <strong id="payment-method">Bonifico Bancario</strong></p>
+        </div>
+        
+        <!-- Tabella consumi compattata -->
+        <h4 style="margin-top: 0.75rem; margin-bottom: 0.5rem;"><i class="fas fa-shopping-cart"></i> Consumi e Importi</h4>
+        <!-- Tabella consumi con colonna costo unitario -->
+<table class="invoice-table" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th style="text-align: left;">Servizio</th>
+            <th style="text-align: center;">Consumo</th>
+            <th style="text-align: center;">Costo</th>
+            <th style="text-align: right;">Importo</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><i class="fas fa-bolt"></i> Energia Elettrica</td>
+            <td id="consumption-electric" style="text-align: center;">250 kWh</td>
+            <td id="unit-cost-electric" style="text-align: center;">0,17 €/kWh</td>
+            <td id="amount-electric" style="text-align: right;">42,50 €</td>
+        </tr>
+        <tr>
+            <td><i class="fas fa-tint"></i> Acqua</td>
+            <td id="consumption-water" style="text-align: center;">18 m³</td>
+            <td id="unit-cost-water" style="text-align: center;">2,00 €/m³</td>
+            <td id="amount-water" style="text-align: right;">36,00 €</td>
+        </tr>
+        <tr>
+            <td><i class="fas fa-fire"></i> Gas</td>
+            <td id="consumption-gas" style="text-align: center;">85 m³</td>
+            <td id="unit-cost-gas" style="text-align: center;">1,10 €/m³</td>
+            <td id="amount-gas" style="text-align: right;">93,50 €</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: right;"><strong>TOTALE</strong></td>
+            <td id="amount-total" style="text-align: right;"><strong>172,00 €</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Note Importanti -->
+<div class="important-notes" style="margin-top: 1rem; margin-bottom: 1rem; border: 2px solid #eb445a; border-radius: 8px; padding: 12px; background-color: #fff3f5;">
+    <h4 style="margin-top: 0; margin-bottom: 0.5rem; color: #eb445a; display: flex; align-items: center;">
+        <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i> NOTE IMPORTANTI
+    </h4>
+    <div id="important-notes-content" style="font-size: 0.9rem; line-height: 1.4;">
+        Si prega di notare che <strong>il pagamento deve essere effettuato entro la data di scadenza</strong>. In caso di ritardato pagamento verranno applicati interessi di mora come da regolamento condominiale. Per qualsiasi chiarimento sulla fattura, contattare l'amministratore.
+    </div>
+</div>
+        
+        <!-- Coordinate bancarie e QR code affiancati -->
+        <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+            <div class="invoice-details-box" style="padding: 0.75rem;">
+                <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-money-check-alt"></i> Coordinate Bancarie</h4>
+                <p style="margin-bottom: 0;">
+                    <strong>IBAN:</strong> <span id="company-iban">IT60X0542811101000000123456</span><br>
+                    <strong>Intestato a:</strong> <span id="company-name-bank">Nome Condominio S.p.A.</span><br>
+                    <strong>Causale:</strong> Fattura <span id="invoice-id-ref">F-12345</span>
+                </p>
+            </div>
+            
+            <div class="qr-code" style="margin-top: 0;">
+                <div class="qr-code-img" style="width: 70px; height: 70px;"></div>
+                <div class="qr-code-text" style="font-size: 0.7rem;">Scansiona per pagamento</div>
+            </div>
+        </div>
+        
+        <!-- Footer compattato -->
+        <div class="invoice-footer" style="margin-top: 0.5rem; padding-top: 0.5rem;">
+            <p style="margin-bottom: 0.25rem; font-size: 0.8rem;"><strong>Note:</strong> <span id="invoice-notes">Pagamento da effettuare entro la data di scadenza. In caso di ritardato pagamento verranno applicati gli interessi di mora come da regolamento condominiale.</span></p>
+            <p style="margin-bottom: 0.25rem; font-size: 0.8rem;">
+                <i class="fas fa-envelope"></i> <span id="company-email">admin@condominio.it</span> | 
+                <i class="fas fa-phone"></i> <span id="company-phone">06 1234567</span>
+            </p>
+            <p style="text-align: center; margin-top: 0.25rem; font-size: 0.7rem; color: #6b7a99;">
+                <i class="fas fa-shield-alt"></i> Documento generato automaticamente dal sistema di gestione condomini.
+            </p>
+        </div>
+    </div>
+</div>
     </main>
 
     <script>
@@ -966,6 +1051,7 @@
             const dataFine = dataFineInput.value;
             const idCondominioSelezionato = condominioSelect.value;
             const metodoPagamento = metodoPagamentoSelect.value;
+            const noteImportanti = document.getElementById('noteImportanti').value;  // 
             
             // Validazione input
             if (!idCondominioSelezionato) { 
@@ -999,12 +1085,13 @@
             // Chiama la funzione backend
             google.script.run
                 .withSuccessHandler(function(risultato) {
-                    gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento);
+                    gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento, noteImportanti);  // AGGIUNGI noteImportanti qui
+     
                 })
                 .withFailureHandler(function(error) {
                     gestisciErroreGenerale(error);
                 })
-                .generaERegistraFattura(idAppartamentoSelezionato, dataFine, metodoPagamento);
+                .generaERegistraFattura(idAppartamentoSelezionato, dataFine, metodoPagamento, noteImportanti);  // AGGIUNGI noteImportanti qui
         }
         
         // --- Funzioni di supporto ---
@@ -1094,7 +1181,7 @@
         /**
          * Gestisce il risultato della generazione fattura
          */
-        function gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento) {
+        function gestisciRisultatoGenerazioneFattura(risultato, metodoPagamento, noteImportanti) {
             // Ripristina stato bottone
             generateButton.removeAttribute('aria-busy');
             generateButton.disabled = false;
@@ -1107,6 +1194,7 @@
             
             // Aggiungi il metodo di pagamento ai risultati
             risultato.metodoPagamento = metodoPagamento;
+            risultato.noteImportanti = noteImportanti;  // AGGIUNGI QUESTA RIGA
             
             // Successo
             displayStatus(`Fattura ${risultato.id} generata con successo!`, "alert-success");
@@ -1185,12 +1273,20 @@
             
             // Consumi e importi
             document.getElementById('consumption-electric').textContent = formatNumber(dati.consumoElettrico) + " kWh";
+            document.getElementById('unit-cost-electric').textContent = formatNumber(dati.costoUnitarioElettrico, 2) + " €/kWh";  // AGGIUNGi
             document.getElementById('amount-electric').textContent = formatNumber(dati.importoElettrico, 2) + " €";
             document.getElementById('consumption-water').textContent = formatNumber(dati.consumoAcqua) + " m³";
+            document.getElementById('unit-cost-water').textContent = formatNumber(dati.costoUnitarioAcqua, 2) + " €/m³";  // AGGIUNGI
             document.getElementById('amount-water').textContent = formatNumber(dati.importoAcqua, 2) + " €";
             document.getElementById('consumption-gas').textContent = formatNumber(dati.consumoGas) + " m³";
+            document.getElementById('unit-cost-gas').textContent = formatNumber(dati.costoUnitarioGas, 2) + " €/m³";  // AGGIUNGI
             document.getElementById('amount-gas').textContent = formatNumber(dati.importoGas, 2) + " €";
             document.getElementById('amount-total').textContent = formatNumber(dati.importoTotale, 2) + " €";
+
+            // Note importanti
+            if (dati.noteImportanti) {
+               document.getElementById('important-notes-content').innerHTML = dati.noteImportanti;
+}
             
             // Azienda
             if (dati.aziendaInfo) {
