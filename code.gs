@@ -379,7 +379,7 @@ function leggiImpostazioniComplete() {
  * @param {string} metodoPagamento - Metodo di pagamento selezionato
  * @returns {Object} - Dati fattura generata
  */
-function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento, noteImportanti) {
+function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento, noteImportanti, scontoPercentuale, motivoSconto) {
   try {
     // 0. Controllo parametri di input
     if (!idAppartamento) throw new Error("ID Appartamento non specificato");
@@ -448,10 +448,18 @@ function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento, no
     const consumoAcqua = trovaConsumoPrecalcolato(idAppartamento, TIPO_ACQUA, dataFine, tutteLetture);
     const consumoGas = trovaConsumoPrecalcolato(idAppartamento, TIPO_GAS, dataFine, tutteLetture);
     
-    // 7. Calcola importi in base alle tariffe
-    const importoElettrico = calcolaImportoSingolaUtenza(consumoElettrico, impostazioni.tariffe.elettrico);
-    const importoAcqua = calcolaImportoSingolaUtenza(consumoAcqua, impostazioni.tariffe.acqua);
-    const importoGas = calcolaImportoSingolaUtenza(consumoGas, impostazioni.tariffe.gas);
+   // 7. Calcola importi in base alle tariffe e applica lo sconto se presente
+    const sconto = (scontoPercentuale / 100) || 0;
+
+// Importi base
+    const importoElettricoBase = calcolaImportoSingolaUtenza(consumoElettrico, impostazioni.tariffe.elettrico);
+    const importoAcquaBase = calcolaImportoSingolaUtenza(consumoAcqua, impostazioni.tariffe.acqua);
+    const importoGasBase = calcolaImportoSingolaUtenza(consumoGas, impostazioni.tariffe.gas);
+
+// Importi con sconto applicato
+    const importoElettrico = importoElettricoBase * (1 - sconto);
+    const importoAcqua = importoAcquaBase * (1 - sconto);
+    const importoGas = importoGasBase * (1 - sconto);
     const importoTotale = importoElettrico + importoAcqua + importoGas;
     
     // 8. Genera data scadenza
@@ -463,24 +471,26 @@ function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento, no
     const nuovoId = (impostazioni.generali.prefissoIdFattura || "FATT-") + generaProssimoIdFatturaNumerico(ss);
     
     // 10. Registra fattura in foglio 'Fatture'
-    const nuovaRiga = [
-      nuovoId,                                // ID Fattura
-      idAppartamento,                         // ID Appartamento
-      Utilities.formatDate(dataInizio, "GMT+1", "yyyy-MM-dd"), // Data Inizio
-      Utilities.formatDate(dataFine, "GMT+1", "yyyy-MM-dd"),   // Data Fine
-      Utilities.formatDate(dataEmissione, "GMT+1", "yyyy-MM-dd"), // Data Emissione
-      Utilities.formatDate(dataScadenza, "GMT+1", "yyyy-MM-dd"),  // Data Scadenza
-      consumoElettrico || 0,                  // Consumo Elettrico
-      importoElettrico || 0,                  // Importo Elettrico
-      consumoAcqua || 0,                      // Consumo Acqua
-      importoAcqua || 0,                      // Importo Acqua
-      consumoGas || 0,                        // Consumo Gas
-      importoGas || 0,                        // Importo Gas
-      importoTotale || 0,                     // Importo Totale
-      impostazioni.generali.statoDefaultFattura || "Da Pagare", // Stato
-      Utilities.formatDate(oggi, "GMT+1", "yyyy-MM-dd HH:mm:ss"), // Data Creazione
-      metodoPagamento || "Non specificato",   // Metodo di Pagamento,
-noteImportanti || ""                    // Note Importanti
+   const nuovaRiga = [
+  nuovoId,                                // ID Fattura
+  idAppartamento,                         // ID Appartamento
+  Utilities.formatDate(dataInizio, "GMT+1", "yyyy-MM-dd"), // Data Inizio
+  Utilities.formatDate(dataFine, "GMT+1", "yyyy-MM-dd"),   // Data Fine
+  Utilities.formatDate(dataEmissione, "GMT+1", "yyyy-MM-dd"), // Data Emissione
+  Utilities.formatDate(dataScadenza, "GMT+1", "yyyy-MM-dd"),  // Data Scadenza
+  consumoElettrico || 0,                  // Consumo Elettrico
+  importoElettrico || 0,                  // Importo Elettrico
+  consumoAcqua || 0,                      // Consumo Acqua
+  importoAcqua || 0,                      // Importo Acqua
+  consumoGas || 0,                        // Consumo Gas
+  importoGas || 0,                        // Importo Gas
+  importoTotale || 0,                     // Importo Totale
+  impostazioni.generali.statoDefaultFattura || "Da Pagare", // Stato
+  Utilities.formatDate(oggi, "GMT+1", "yyyy-MM-dd HH:mm:ss"), // Data Creazione
+  metodoPagamento || "Non specificato",   // Metodo di Pagamento
+  noteImportanti || "",                   // Note Importanti
+  scontoPercentuale || 0,                 // Sconto Percentuale
+  motivoSconto || ""                      // Motivo Sconto
 ];
     
     // Assicurati che la prima riga abbia l'intestazione per il nuovo campo
@@ -504,6 +514,23 @@ noteImportanti || ""                    // Note Importanti
         headers[COL_FATT_METODO_PAGAMENTO - 1] = "Metodo Pagamento";
         sheetFatture.getRange(1, 1, 1, headers.length).setValues([headers]);
       }
+      // Aggiungi intestazioni per Note Importanti, Sconto e Motivo Sconto se non esistono
+  const COL_FATT_NOTE_IMPORTANTI = COL_FATT_METODO_PAGAMENTO + 1;
+  const COL_FATT_SCONTO_PERCENTUALE = COL_FATT_METODO_PAGAMENTO + 2;
+  const COL_FATT_MOTIVO_SCONTO = COL_FATT_METODO_PAGAMENTO + 3;
+  
+  if (headers.length < COL_FATT_NOTE_IMPORTANTI || !headers[COL_FATT_NOTE_IMPORTANTI - 1]) {
+    headers[COL_FATT_NOTE_IMPORTANTI - 1] = "Note Importanti";
+  }
+  
+  if (headers.length < COL_FATT_SCONTO_PERCENTUALE || !headers[COL_FATT_SCONTO_PERCENTUALE - 1]) {
+    headers[COL_FATT_SCONTO_PERCENTUALE - 1] = "Sconto Percentuale";
+  }
+  
+  if (headers.length < COL_FATT_MOTIVO_SCONTO || !headers[COL_FATT_MOTIVO_SCONTO - 1]) {
+    headers[COL_FATT_MOTIVO_SCONTO - 1] = "Motivo Sconto";
+    sheetFatture.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
     }
     
     sheetFatture.appendRow(nuovaRiga);
@@ -530,6 +557,8 @@ noteImportanti || ""                    // Note Importanti
       stato: impostazioni.generali.statoDefaultFattura || "Da Pagare",
       metodoPagamento: metodoPagamento,
       noteImportanti: noteImportanti || "",
+      scontoPercentuale: scontoPercentuale || 0,
+      motivoSconto: motivoSconto || "",
       aziendaInfo: {
         nome: impostazioni.generali.nomeAzienda,
         indirizzo: impostazioni.generali.indirizzoAzienda,
