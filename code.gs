@@ -12,6 +12,11 @@ const SPREADSHEET_ID = "1GKqcZWPSi7mq7s8Ht-IRwCK641p82xoIplMwixIxfFw";
 const TIPO_ELETTRICO = "elettrico";
 const TIPO_ACQUA = "acqua";
 const TIPO_GAS = "gas";
+// --- Indici Colonne Foglio 'Condomini' (partendo da 1) ---
+const NOME_FOGLIO_CONDOMINI = "Condomini"; // Sostituisci con il nome reale del tuo foglio "Condomini"
+
+
+
 
 // --- Indici Colonne Foglio 'Appartamenti' (partendo da 1) ---
 const COL_APP_ID = 1;             // Col A: ID Univoco Appartamento
@@ -156,15 +161,12 @@ function getCondominiList() {
         const idRange = sheet.getRange(2, COL_APP_CONDOMINIO_ID, lastRow - 1, 1);
         const idValues = idRange.getValues();
         
-        const nameRange = sheet.getRange(2, COL_APP_CONDOMINIO_NOME, lastRow - 1, 1);
-        const nameValues = nameRange.getValues();
-        
         // Creiamo una mappa per tenere traccia dei condomini univoci
         const condominiMap = new Map();
         
         for (let i = 0; i < idValues.length; i++) {
             const id = idValues[i][0];
-            const nome = nameValues[i][0] || `Condominio ${id}`; // Se il nome è vuoto, usiamo ID con prefisso
+            const nome = getCondominioNomeById(id) || `Condominio ${id}`; // Se il nome è vuoto, usiamo ID con prefisso
             
             if (id && !condominiMap.has(id)) {
                 condominiMap.set(id, {
@@ -187,7 +189,42 @@ function getCondominiList() {
         return [];
     }
 }
+function getCondominioNomeById(condominioId) {
+  try {
+    const ss = getSpreadsheet();
+    const sheet = ss.getSheetByName(NOME_FOGLIO_CONDOMINI); // Assicurati di avere questa costante definita
 
+    if (!sheet) throw new Error(`Foglio "${NOME_FOGLIO_CONDOMINI}" non trovato.`);
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return null; // Foglio vuoto o solo intestazione
+
+    // Trova la colonna dove si trova l'ID (ipotizziamo sia la colonna A, quindi 1)
+    const idColumn = 1; // Controlla che sia corretto nel foglio Condomini
+    const nomeColumn = 2; // Ipotizziamo che il nome sia nella colonna B (2) // Controlla che sia corretto nel foglio Condomini
+
+    // Leggi tutti gli ID dal foglio Condomini
+    const idRange = sheet.getRange(2, idColumn, lastRow - 1, 1);
+    const idValues = idRange.getValues();
+
+    // Leggi tutti i nomi dal foglio Condomini
+    const nomeRange = sheet.getRange(2, nomeColumn, lastRow - 1, 1);
+    const nomeValues = nomeRange.getValues();
+
+
+    // Cerca l'ID corrispondente e restituisci il nome
+    for (let i = 0; i < idValues.length; i++) {
+      if (String(idValues[i][0]) === String(condominioId)) { // Confronta come stringhe per sicurezza
+        return nomeValues[i][0];
+      }
+    }
+
+    return null; // Condominio non trovato
+  } catch (error) {
+    Logger.log(`Errore in getCondominioNomeById: ${error}`);
+    return null;
+  }
+}
 /**
  * Restituisce TUTTI i dati rilevanti degli appartamenti per il filtraggio frontend.
  * @returns {Array<Object>} Array di oggetti {id, condominioId, nomeDisplay} o array vuoto.
@@ -342,7 +379,7 @@ function leggiImpostazioniComplete() {
  * @param {string} metodoPagamento - Metodo di pagamento selezionato
  * @returns {Object} - Dati fattura generata
  */
-function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento) {
+function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento, noteImportanti) {
   try {
     // 0. Controllo parametri di input
     if (!idAppartamento) throw new Error("ID Appartamento non specificato");
@@ -442,8 +479,9 @@ function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento) {
       importoTotale || 0,                     // Importo Totale
       impostazioni.generali.statoDefaultFattura || "Da Pagare", // Stato
       Utilities.formatDate(oggi, "GMT+1", "yyyy-MM-dd HH:mm:ss"), // Data Creazione
-      metodoPagamento || "Non specificato"    // Metodo di Pagamento
-    ];
+      metodoPagamento || "Non specificato",   // Metodo di Pagamento,
+noteImportanti || ""                    // Note Importanti
+];
     
     // Assicurati che la prima riga abbia l'intestazione per il nuovo campo
     // Se il foglio è vuoto o ha solo l'intestazione, aggiungi/aggiorna l'intestazione
@@ -457,7 +495,7 @@ function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento) {
           "ID Fattura", "ID Appartamento", "Data Inizio", "Data Fine", 
           "Data Emissione", "Data Scadenza", "Consumo Elettrico", "Importo Elettrico",
           "Consumo Acqua", "Importo Acqua", "Consumo Gas", "Importo Gas",
-          "Importo Totale", "Stato", "Data Creazione"
+          "Importo Totale", "Stato", "Data Creazione", "Note Importanti"
         ];
       }
       
@@ -491,6 +529,7 @@ function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento) {
       importoTotale: importoTotale || 0,
       stato: impostazioni.generali.statoDefaultFattura || "Da Pagare",
       metodoPagamento: metodoPagamento,
+      noteImportanti: noteImportanti || "",
       aziendaInfo: {
         nome: impostazioni.generali.nomeAzienda,
         indirizzo: impostazioni.generali.indirizzoAzienda,
