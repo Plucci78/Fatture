@@ -125,6 +125,124 @@ function doGet(e) {
 }
 
 /**
+ * Aggiorna lo stato delle fatture scadute
+ * Da impostare come trigger giornaliero
+ */
+function aggiornaStatoFattureScadute() {
+  try {
+    const ss = getSpreadsheet();
+    const sheetFatture = ss.getSheetByName(NOME_FOGLIO_FATTURE);
+    
+    if (!sheetFatture) {
+      Logger.log("Foglio fatture non trovato");
+      return;
+    }
+    
+    const dati = sheetFatture.getDataRange().getValues();
+    
+    // Indice delle colonne da intestazioni
+    const colDataScadenza = 5; // Colonna F - Data Scadenza
+    const colStato = 14; // Colonna O - Stato
+    
+    const oggi = new Date();
+    oggi.setHours(0, 0, 0, 0); // Normalizza la data di oggi
+    
+    // Conta quante fatture sono state aggiornate
+    let conteggioAggiornate = 0;
+    
+    // Controlla ogni fattura
+    for (let i = 1; i < dati.length; i++) {
+      const dataScadenza = dati[i][colDataScadenza];
+      const statoAttuale = dati[i][colStato];
+      
+      // Verifica se la fattura è scaduta e lo stato è "Da Pagare"
+      if (dataScadenza instanceof Date && 
+          !isNaN(dataScadenza.getTime()) &&
+          dataScadenza < oggi && 
+          statoAttuale === "Da Pagare") {
+        
+        // Aggiorna lo stato a "Scaduta"
+        sheetFatture.getRange(i + 1, colStato + 1).setValue("Scaduta");
+        conteggioAggiornate++;
+      }
+    }
+    
+    Logger.log(`Aggiornamento completato. ${conteggioAggiornate} fatture sono diventate "Scadute"`);
+    return conteggioAggiornate;
+  } catch (error) {
+    Logger.log("Errore nell'aggiornamento degli stati: " + error);
+    return 0;
+  }
+}
+
+/**
+ * Genera l'HTML della fattura per l'anteprima usando lo stesso template della generazione automatica
+ * @param {string} fatturaId - ID della fattura
+ * @returns {string} - HTML della fattura
+ */
+function getHtmlFatturaAnteprima(fatturaId) {
+  try {
+    // Ottieni i dati della fattura dal foglio
+    const ss = getSpreadsheet();
+    const sheetFatture = ss.getSheetByName(NOME_FOGLIO_FATTURE);
+    
+    if (!sheetFatture) throw new Error("Foglio fatture non trovato");
+    
+    // Cerca la fattura per ID
+    const dati = sheetFatture.getDataRange().getValues();
+    let fatturaRow = null;
+    for (let i = 1; i < dati.length; i++) {
+      if (String(dati[i][0]) === String(fatturaId)) {
+        fatturaRow = dati[i];
+        break;
+      }
+    }
+    
+    if (!fatturaRow) throw new Error(`Fattura con ID ${fatturaId} non trovata`);
+    
+    // Recupera tutti i dati necessari per la fattura, inclusi campi aggiuntivi
+    const idAppartamento = fatturaRow[1];
+    const datiAppartamento = getDatiAppartamentoById(ss, idAppartamento);
+    const impostazioni = leggiImpostazioniComplete();
+    
+    // Preparazione dati completi per includere tutti i campi come nella fattura mostrata
+    const datiCompleti = {
+      id: fatturaId,
+      idAppartamento: idAppartamento,
+      intestatario: datiAppartamento?.intestatario || "N/D",
+      indirizzo: datiAppartamento?.indirizzo || "N/D",
+      cfPiva: datiAppartamento?.cfPiva || "N/D",
+      dataInizio: fatturaRow[2],
+      dataFine: fatturaRow[3],
+      dataEmissione: fatturaRow[4],
+      dataScadenza: fatturaRow[5],
+      consumoElettrico: fatturaRow[6] || 0,
+      importoElettrico: fatturaRow[7] || 0,
+      consumoAcqua: fatturaRow[8] || 0,
+      importoAcqua: fatturaRow[9] || 0,
+      consumoGas: fatturaRow[10] || 0,
+      importoGas: fatturaRow[11] || 0,
+      importoTotale: fatturaRow[12] || 0,
+      stato: fatturaRow[14] || "Da Pagare",
+      metodoPagamento: fatturaRow[15] || "Bonifico Bancario",
+      noteImportanti: fatturaRow[16] || "",
+      scontoPercentuale: fatturaRow[17] || 0,
+      motivoSconto: fatturaRow[18] || "",
+      aziendaInfo: impostazioni.generali
+    };
+    
+    // Genera l'HTML esattamente come nella generazione automatica
+    // Usa la stessa funzione che genera la fattura come mostrato nell'immagine
+    const htmlContent = creaHtmlFattura(datiCompleti);
+    
+    return htmlContent;
+  } catch (error) {
+    Logger.log("Errore in getHtmlFatturaAnteprima: " + error);
+    return `<div class="alert alert-danger">Errore: ${error.message || "Errore sconosciuto"}</div>`;
+  }
+}
+
+/**
  * Ottiene il foglio di calcolo, con gestione robusta degli errori
  */
 function getSpreadsheet() {
