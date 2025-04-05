@@ -88,9 +88,17 @@ function doGet(e) {
     // Gestione parametri URL
     const params = e.parameter;
     
-    // Visualizzazione PDF
-    if (params.view && params.view === 'pdf' && params.id) {
-      return generaFatturaPdf(params.id);
+    // Visualizzazione PDF o HTML
+    if (params.view && params.id) {
+      if (params.view === 'pdf') {
+        // Mantieni la funzionalità PDF esistente
+        return generaFatturaPdf(params.id);
+      } else if (params.view === 'html') {
+        // Nuova modalità di visualizzazione HTML
+        // Utilizza la stessa funzione che genererebbe il PDF ma senza convertirlo
+        const htmlOutput = generaHtmlFattura(params.id);
+        return htmlOutput;
+      }
     }
     
     // Pagina di elenco fatture
@@ -578,60 +586,98 @@ function generaERegistraFattura(idAppartamento, dataFineStr, metodoPagamento, no
 
 /**
  * Ottiene l'elenco completo delle fatture con dati relativi.
+ * Versione modificata per compatibilità con il foglio dati mostrato.
  * @returns {Array<Object>} Lista di fatture formattate
  */
 function getFattureList() {
   try {
     const ss = getSpreadsheet();
     const sheetFatture = ss.getSheetByName(NOME_FOGLIO_FATTURE);
-    if (!sheetFatture) throw new Error(`Foglio ${NOME_FOGLIO_FATTURE} non trovato`);
+    if (!sheetFatture) {
+      Logger.log(`Foglio ${NOME_FOGLIO_FATTURE} non trovato`);
+      return [];
+    }
     
     // Leggi tutte le righe (esclusa intestazione)
     const lastRow = sheetFatture.getLastRow();
-    if (lastRow <= 1) return []; // Solo intestazione o foglio vuoto
+    if (lastRow <= 1) {
+      Logger.log("Solo intestazione o foglio vuoto");
+      return []; // Solo intestazione o foglio vuoto
+    }
     
+    // Adattamento per compatibilità: leggi TUTTE le colonne dal foglio
+    Logger.log(`Lettura dati fatture da ${lastRow-1} righe`);
     const values = sheetFatture.getRange(2, 1, lastRow - 1, sheetFatture.getLastColumn()).getValues();
     const fatture = [];
     
-    // Per ogni fattura, recupera i dati dell'appartamento
     for (let i = 0; i < values.length; i++) {
-      const row = values[i];
-      const idAppartamento = row[COL_FATT_APP_ID - 1];
-      
-      // Salta righe vuote o incomplete
-      if (!row[COL_FATT_ID - 1]) continue;
-      
-      // Recupera dati appartamento
-      const datiAppartamento = getDatiAppartamentoById(ss, idAppartamento);
-      
-      // Crea oggetto fattura
-      fatture.push({
-        id: row[COL_FATT_ID - 1],
-        idAppartamento: idAppartamento,
-        intestatario: datiAppartamento ? datiAppartamento.intestatario : "N/D",
-        indirizzo: datiAppartamento ? datiAppartamento.indirizzo : "N/D",
-        email: datiAppartamento ? datiAppartamento.email : "",
-        dataInizio: row[COL_FATT_DATA_INIZIO - 1],
-        dataFine: row[COL_FATT_DATA_FINE - 1],
-        dataEmissione: row[COL_FATT_DATA_EMISSIONE - 1],
-        dataScadenza: row[COL_FATT_DATA_SCADENZA - 1],
-        consumoElettrico: row[COL_FATT_CONS_ELETTRICO - 1] || 0,
-        importoElettrico: row[COL_FATT_IMP_ELETTRICO - 1] || 0,
-      consumoAcqua: row[COL_FATT_CONS_ACQUA - 1] || 0,
-        importoAcqua: row[COL_FATT_IMP_ACQUA - 1] || 0,
-        consumoGas: row[COL_FATT_CONS_GAS - 1] || 0,
-        importoGas: row[COL_FATT_IMP_GAS - 1] || 0,
-        importoTotale: row[COL_FATT_IMP_TOTALE - 1] || 0,
-        stato: row[COL_FATT_STATO - 1] || "Da Pagare",
-        metodoPagamento: row[COL_FATT_METODO_PAGAMENTO - 1] || "Non specificato",
-        dataCreazione: row[COL_FATT_DATA_CREAZIONE - 1]
-      });
+      try {
+        const row = values[i];
+        
+        // Si aspetta ID Fattura nella prima colonna
+        const idFattura = row[0]; // Prima colonna nel foglio
+        if (!idFattura) {
+          Logger.log(`Riga ${i+2} senza ID fattura, saltata`);
+          continue; // Salta righe senza ID
+        }
+
+        // Ottieni gli indici delle colonne necessarie dal foglio mostrato nell'immagine
+        // NOTA: adatto agli indici mostrati nel tuo foglio, non quelli definiti nelle costanti
+        const COL_APP_ID = 1; // Colonna appartamento (B)
+        const COL_DATA_INIZIO = 2; // Data inizio (C)
+        const COL_DATA_FINE = 3;   // Data fine (D)
+        const COL_DATA_EMISSIONE = 4; // Data emissione (E)
+        const COL_DATA_SCADENZA = 5;  // Data scadenza (F)
+        const COL_TOTALE = 12;       // Importo totale (M)
+        const COL_STATO = 14;        // Stato (O)
+        
+        // In base all'immagine, prendi i dati dalle colonne corrette
+        const idAppartamento = row[COL_APP_ID]; 
+        
+        // Recupera dati appartamento
+        const datiAppartamento = getDatiAppartamentoById(ss, idAppartamento);
+        
+        // Converti le date in formato stringa se sono oggetti Date
+        const formatDate = (date) => {
+          if (!date) return "";
+          if (typeof date === "string") return date;
+          if (date instanceof Date && !isNaN(date.getTime())) {
+            return Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyy-MM-dd");
+          }
+          return "";
+        };
+        
+        // Crea oggetto fattura
+        const importoTotale = typeof row[COL_TOTALE] === 'number' ? row[COL_TOTALE] : 0;
+        const stato = row[COL_STATO] || "Da Pagare";
+        
+        fatture.push({
+          id: idFattura.toString(),
+          idAppartamento: idAppartamento ? idAppartamento.toString() : "",
+          intestatario: datiAppartamento ? datiAppartamento.intestatario : "Intestatario sconosciuto",
+          indirizzo: datiAppartamento ? datiAppartamento.indirizzo : "Indirizzo sconosciuto",
+          email: datiAppartamento ? datiAppartamento.email : "",
+          dataInizio: formatDate(row[COL_DATA_INIZIO]),
+          dataFine: formatDate(row[COL_DATA_FINE]),
+          dataEmissione: formatDate(row[COL_DATA_EMISSIONE]),
+          dataScadenza: formatDate(row[COL_DATA_SCADENZA]),
+          importoElettrico: 0, // Fallback
+          importoAcqua: 0,     // Fallback 
+          importoGas: 0,       // Fallback
+          importoTotale: importoTotale,
+          stato: stato,
+          metodoPagamento: "Bonifico Bancario" // Valore predefinito
+        });
+      } catch (rowError) {
+        Logger.log(`Errore nell'elaborazione della riga ${i+2}: ${rowError}`);
+        // Continua con la prossima riga
+      }
     }
     
-    Logger.log(`Recuperate ${fatture.length} fatture.`);
+    Logger.log(`Recuperate ${fatture.length} fatture con successo.`);
     return fatture;
   } catch (error) {
-    Logger.log(`Errore in getFattureList: ${error}`);
+    Logger.log(`Errore GRAVE in getFattureList: ${error}`);
     return [];
   }
 }
@@ -780,6 +826,84 @@ function generaFatturaPdf(fatturaId) {
     return HtmlService.createHtmlOutput(`<h1>Errore</h1><p>${error.message || error}</p>`)
       .setTitle('Errore')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+}
+/**
+ * Genera l'HTML della fattura per la visualizzazione
+ * @param {string} fatturaId - ID della fattura
+ * @returns {HtmlOutput} - Output HTML della fattura
+ */
+function generaHtmlFattura(fatturaId) {
+  try {
+    // Questo è simile a generaFatturaPdf ma restituisce l'HTML invece del PDF
+    
+    // Ottieni i dati della fattura
+    const ss = getSpreadsheet();
+    const sheetFatture = ss.getSheetByName(NOME_FOGLIO_FATTURE);
+    
+    if (!sheetFatture) throw new Error("Foglio fatture non trovato");
+    
+    // Cerca la fattura per ID
+    const valori = sheetFatture.getDataRange().getValues();
+    let fatturaRow = null;
+    for (let i = 1; i < valori.length; i++) {
+      if (valori[i][0] === fatturaId) {
+        fatturaRow = valori[i];
+        break;
+      }
+    }
+    
+    if (!fatturaRow) throw new Error(`Fattura con ID ${fatturaId} non trovata`);
+    
+    // Ottieni i dati dell'appartamento
+    const idAppartamento = fatturaRow[1];
+    const datiAppartamento = getDatiAppartamentoById(ss, idAppartamento);
+    
+    // Ottieni i dati generali (impostazioni, tariffe, etc.)
+    const impostazioni = leggiImpostazioniComplete();
+    
+    // Crea l'oggetto dati per la fattura
+    const datiCompleti = {
+      id: fatturaId,
+      idAppartamento: idAppartamento,
+      intestatario: datiAppartamento?.intestatario,
+      indirizzo: datiAppartamento?.indirizzo,
+      cfPiva: datiAppartamento?.cfPiva,
+      dataInizio: fatturaRow[2],
+      dataFine: fatturaRow[3],
+      dataEmissione: fatturaRow[4],
+      dataScadenza: fatturaRow[5],
+      consumoElettrico: fatturaRow[6],
+      importoElettrico: fatturaRow[7],
+      consumoAcqua: fatturaRow[8],
+      importoAcqua: fatturaRow[9],
+      consumoGas: fatturaRow[10],
+      importoGas: fatturaRow[11],
+      importoTotale: fatturaRow[12],
+      stato: fatturaRow[14],
+      metodoPagamento: fatturaRow[15] || "Non specificato",
+      scontoPercentuale: fatturaRow[16] || 0,  // Campo per lo sconto
+      motivoSconto: fatturaRow[17] || "",  // Motivo dello sconto
+      aziendaInfo: impostazioni.generali
+    };
+    
+    // Usa la stessa funzione che genera l'HTML per il PDF
+    const htmlContent = creaHtmlFattura(datiCompleti);
+    
+    // Restituisci l'HTML senza convertirlo in PDF
+    return HtmlService.createHtmlOutput(htmlContent)
+      .setTitle("Fattura " + fatturaId)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+      
+  } catch (error) {
+    Logger.log(`Errore in generaHtmlFattura: ${error}`);
+    return HtmlService.createHtmlOutput(`
+      <h1>Errore</h1>
+      <p>${error.message || "Si è verificato un errore durante la generazione della visualizzazione"}</p>
+      <p><a href="javascript:window.history.back();">Torna indietro</a></p>
+    `)
+    .setTitle('Errore')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
 }
 
