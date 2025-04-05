@@ -1716,16 +1716,86 @@ Amministrazione Condominio`;
          * Visualizza il PDF della fattura
          */
         function visualizzaPdf(fatturaId) {
-            try {
-                console.log("Apertura PDF per fattura:", fatturaId);
-                // Costruisci l'URL per la visualizzazione del PDF
-                const pdfUrl = `<?= getScriptUrl() ?>?view=pdf&id=${fatturaId}`;
-                window.open(pdfUrl, '_blank');
-            } catch (error) {
-                console.error("Errore nell'apertura del PDF:", error);
-                alert("Errore nell'apertura del PDF: " + error.message);
-            }
-        }
+    try {
+        // Crea una finestra modale per visualizzare la fattura
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.style.position = 'fixed';
+        modal.style.zIndex = '1050';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        
+        const modalDialog = document.createElement('div');
+        modalDialog.className = 'modal-dialog';
+        modalDialog.style.maxWidth = '800px';
+        modalDialog.style.margin = '30px auto';
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        
+        // Intestazione modale
+        const modalHeader = document.createElement('div');
+        modalHeader.className = 'modal-header';
+        modalHeader.innerHTML = `
+            <h5 class="modal-title"><i class="fas fa-file-invoice"></i> Anteprima Fattura ${fatturaId}</h5>
+            <button type="button" class="close" id="closePreviewBtn">
+                <span>&times;</span>
+            </button>
+        `;
+        
+        // Corpo modale con iframe
+        const modalBody = document.createElement('div');
+        modalBody.className = 'modal-body';
+        modalBody.style.maxHeight = '70vh';
+        modalBody.style.overflow = 'auto';
+        modalBody.innerHTML = `
+            <div id="loaderContainer" style="display: flex; justify-content: center; padding: 2rem;">
+                <div class="loader"></div>
+                <span style="margin-left: 1rem;">Caricamento anteprima...</span>
+            </div>
+        `;
+        
+        // Costruzione della struttura modale
+        modalContent.appendChild(modalHeader);
+        modalContent.appendChild(modalBody);
+        modalDialog.appendChild(modalContent);
+        modal.appendChild(modalDialog);
+        
+        // Aggiungi la modale al body
+        document.body.appendChild(modal);
+        
+        // Imposta il comportamento di chiusura
+        document.getElementById('closePreviewBtn').addEventListener('click', function() {
+            document.body.removeChild(modal);
+        });
+        
+        // Richiedi i dati della fattura
+        google.script.run
+            .withSuccessHandler(function(htmlContent) {
+                const loaderContainer = document.getElementById('loaderContainer');
+                if (loaderContainer) loaderContainer.style.display = 'none';
+                
+                // Inserisci l'HTML direttamente
+                modalBody.innerHTML = htmlContent;
+            })
+            .withFailureHandler(function(error) {
+                modalBody.innerHTML = `
+                    <div class="alert alert-danger" style="margin: 20px;">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        Errore nel caricamento dell'anteprima: ${error}
+                    </div>
+                `;
+            })
+            .getHtmlFatturaAnteprima(fatturaId);
+    } catch (error) {
+        console.error("Errore nell'apertura dell'anteprima:", error);
+        alert("Errore nell'apertura dell'anteprima: " + error.message);
+    }
+}
         
         /**
          * Mostra un messaggio di stato nei modali
