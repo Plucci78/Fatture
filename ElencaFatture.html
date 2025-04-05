@@ -871,6 +871,7 @@
                                 <th>ID Fattura</th>
                                 <th>Condominio</th>
                                 <th>Intestatario</th>
+                               
                                 <th>Data Emissione</th>
                                 <th>Data Scadenza</th>
                                 <th>Importo</th>
@@ -1151,37 +1152,105 @@
          * Carica tutti i dati necessari
          */
         function caricaDati() {
-            // Mostra messaggio di caricamento
-            showStatus("Caricamento dati in corso...", "alert-info");
+    // Mostra messaggio di caricamento
+    showStatus("Caricamento dati in corso...", "alert-info");
+    
+    console.log("=== INIZIO CARICAMENTO DATI ===");
+    
+    // 1. Carica condomini
+    console.log("Richiesta condomini in corso...");
+    google.script.run
+        .withSuccessHandler(function(condomini) {
+            console.log("Condomini ricevuti:", condomini);
+            allCondomini = condomini || [];
+            popolaFiltroCondomini();
             
-            // 1. Carica condomini
-            google.script.run
-                .withSuccessHandler(function(condomini) {
-                    allCondomini = condomini || [];
-                    popolaFiltroCondomini();
-                })
-                .withFailureHandler(handleError)
-                .getCondominiList();
+            // Procedi con il caricamento degli appartamenti
+            caricaAppartamenti();
+        })
+        .withFailureHandler(function(error) {
+            console.error("Errore caricamento condomini:", error);
+            handleError(error);
+            // Prova comunque a caricare gli appartamenti
+            caricaAppartamenti();
+        })
+        .getCondominiList();
+    
+    function caricaAppartamenti() {
+        console.log("Richiesta appartamenti in corso...");
+        // 2. Carica appartamenti
+        google.script.run
+            .withSuccessHandler(function(appartamenti) {
+                console.log("Appartamenti ricevuti:", appartamenti);
+                allAppartamenti = appartamenti || [];
                 
-            // 2. Carica appartamenti
-            google.script.run
-                .withSuccessHandler(function(appartamenti) {
-                    allAppartamenti = appartamenti || [];
-                })
-                .withFailureHandler(handleError)
-                .getAppartamentiData();
+                // Procedi con il caricamento delle fatture
+                caricaFatture();
+            })
+            .withFailureHandler(function(error) {
+                console.error("Errore caricamento appartamenti:", error);
+                handleError(error);
+                // Prova comunque a caricare le fatture
+                caricaFatture();
+            })
+            .getAppartamentiData();
+    }
+    
+    function caricaFatture() {
+        console.log("Richiesta fatture in corso...");
+        // 3. Carica fatture direttamente
+        google.script.run
+            .withSuccessHandler(function(fatture) {
+                console.log("RISPOSTA FATTURE:", fatture);
                 
-            // 3. Carica fatture
-            google.script.run
-                .withSuccessHandler(function(fatture) {
-                    allFatture = fatture || [];
+                if (!fatture) {
+                    console.error("Nessun dato fatture ricevuto (undefined o null)");
+                    showStatus("Errore: Nessun dato fatture ricevuto dal server", "alert-danger");
+                    allFatture = [];
+                } else if (Array.isArray(fatture) && fatture.length === 0) {
+                    console.log("Array fatture vuoto ricevuto");
+                    showStatus("Nessuna fattura trovata nel sistema", "alert-warning");
+                    allFatture = [];
+                } else if (fatture.error) {
+                    console.error("Errore ricevuto:", fatture.error);
+                    showStatus("Errore: " + fatture.error, "alert-danger");
+                    allFatture = [];
+                } else {
+                    allFatture = fatture;
                     hideStatus();
                     updateSummaryStats();
                     filterFatture();
-                })
-                .withFailureHandler(handleError)
-                .getFattureList();
-        }
+                    console.log("Fatture elaborate con successo:", allFatture.length);
+                }
+                
+                // Aggiorna UI anche se vuoto
+                if (allFatture.length === 0) {
+                    document.getElementById('fattureBody').innerHTML = 
+                        '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Nessuna fattura trovata nel sistema</td></tr>';
+                    
+                    // Resetta contatori
+                    document.getElementById('total-invoices').textContent = '0';
+                    document.getElementById('paid-invoices').textContent = '0';
+                    document.getElementById('pending-invoices').textContent = '0';
+                    document.getElementById('overdue-invoices').textContent = '0';
+                    
+                    // Aggiorna info paginazione
+                    document.getElementById('start-entry').textContent = '0';
+                    document.getElementById('end-entry').textContent = '0';
+                    document.getElementById('total-entries').textContent = '0';
+                    document.getElementById('current-page').textContent = '1';
+                }
+            })
+            .withFailureHandler(function(error) {
+                console.error("Errore caricamento fatture:", error);
+                hideStatus();
+                handleError(error);
+                document.getElementById('fattureBody').innerHTML = 
+                    '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Errore nel caricamento delle fatture: ' + (error.message || "errore sconosciuto") + '</td></tr>';
+            })
+            .getFattureList();
+    }
+}
         
         /**
          * Aggiorna le statistiche riepilogative
@@ -1277,143 +1346,184 @@
         /**
          * Renderizza le fatture nella tabella con paginazione
          */
-        function renderFatture(fatture = allFatture) {
-            const tbody = document.getElementById('fattureBody');
+   
+function renderFatture(fatture = allFatture) {
+    console.log("Rendering fatture:", fatture ? fatture.length : 0);
+    const tbody = document.getElementById('fattureBody');
+    
+    if (!fatture || fatture.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Nessuna fattura trovata</td></tr>';
+        
+        // Aggiorna info paginazione
+        document.getElementById('start-entry').textContent = '0';
+        document.getElementById('end-entry').textContent = '0';
+        document.getElementById('total-entries').textContent = '0';
+        document.getElementById('current-page').textContent = '1';
+        
+        // Disabilita pulsanti paginazione
+        document.getElementById('prevPage').disabled = true;
+        document.getElementById('nextPage').disabled = true;
+        
+        return;
+    }
+    
+    // Ordina per data di emissione (più recenti prima)
+    try {
+        fatture.sort((a, b) => {
+            const dateA = a.dataEmissione ? new Date(a.dataEmissione) : new Date(0);
+            const dateB = b.dataEmissione ? new Date(b.dataEmissione) : new Date(0);
+            return dateB - dateA;
+        });
+    } catch (error) {
+        console.error("Errore nel sort delle fatture:", error);
+    }
+    
+    // Calcola paginazione
+    const totalItems = fatture.length;
+    paginationConfig.totalPages = Math.ceil(totalItems / paginationConfig.itemsPerPage);
+    
+    // Assicurati che la pagina corrente sia valida
+    if (paginationConfig.currentPage > paginationConfig.totalPages) {
+        paginationConfig.currentPage = paginationConfig.totalPages;
+    }
+    
+    // Calcola indici per la pagina corrente
+    const startIndex = (paginationConfig.currentPage - 1) * paginationConfig.itemsPerPage;
+    const endIndex = Math.min(startIndex + paginationConfig.itemsPerPage, totalItems);
+    
+    // Aggiorna info paginazione
+    document.getElementById('start-entry').textContent = totalItems > 0 ? startIndex + 1 : '0';
+    document.getElementById('end-entry').textContent = endIndex;
+    document.getElementById('total-entries').textContent = totalItems;
+    document.getElementById('current-page').textContent = paginationConfig.currentPage;
+    
+    // Abilita/Disabilita pulsanti paginazione
+    document.getElementById('prevPage').disabled = paginationConfig.currentPage <= 1;
+    document.getElementById('nextPage').disabled = paginationConfig.currentPage >= paginationConfig.totalPages;
+    
+    // Estrai le fatture per la pagina corrente
+    const fatturePerPage = fatture.slice(startIndex, endIndex);
+    
+    tbody.innerHTML = '';
+    fatturePerPage.forEach((fattura, index) => {
+        try {
+            // Trova il nome del condominio
+            const appartamento = allAppartamenti.find(a => a.id === fattura.idAppartamento);
+            const condominio = allCondomini.find(c => 
+                appartamento && String(c.id) === String(appartamento?.condominioId)
+            );
             
-            if (!fatture || fatture.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Nessuna fattura trovata</td></tr>';
-                
-                // Aggiorna info paginazione
-                document.getElementById('start-entry').textContent = '0';
-                document.getElementById('end-entry').textContent = '0';
-                document.getElementById('total-entries').textContent = '0';
-                document.getElementById('current-page').textContent = '1';
-                
-                // Disabilita pulsanti paginazione
-                document.getElementById('prevPage').disabled = true;
-                document.getElementById('nextPage').disabled = true;
-                
-                return;
-            }
-            
-            // Ordina per data di emissione (più recenti prima)
-            fatture.sort((a, b) => new Date(b.dataEmissione) - new Date(a.dataEmissione));
-            
-            // Calcola paginazione
-            const totalItems = fatture.length;
-            paginationConfig.totalPages = Math.ceil(totalItems / paginationConfig.itemsPerPage);
-            
-            // Assicurati che la pagina corrente sia valida
-            if (paginationConfig.currentPage > paginationConfig.totalPages) {
-                paginationConfig.currentPage = paginationConfig.totalPages;
-            }
-            
-            // Calcola indici per la pagina corrente
-            const startIndex = (paginationConfig.currentPage - 1) * paginationConfig.itemsPerPage;
-            const endIndex = Math.min(startIndex + paginationConfig.itemsPerPage, totalItems);
-            
-            // Aggiorna info paginazione
-            document.getElementById('start-entry').textContent = totalItems > 0 ? startIndex + 1 : '0';
-            document.getElementById('end-entry').textContent = endIndex;
-            document.getElementById('total-entries').textContent = totalItems;
-            document.getElementById('current-page').textContent = paginationConfig.currentPage;
-            
-            // Abilita/Disabilita pulsanti paginazione
-            document.getElementById('prevPage').disabled = paginationConfig.currentPage <= 1;
-            document.getElementById('nextPage').disabled = paginationConfig.currentPage >= paginationConfig.totalPages;
-            
-            // Estrai le fatture per la pagina corrente
-            const fatturePerPage = fatture.slice(startIndex, endIndex);
-            
-            tbody.innerHTML = '';
-            fatturePerPage.forEach(fattura => {
-                // Trova il nome del condominio
-                const appartamento = allAppartamenti.find(a => a.id === fattura.idAppartamento);
-                const condominio = allCondomini.find(c => 
-                    appartamento && String(c.id) === String(appartamento?.condominioId)
-                );
-                
-                // Formatta date
-                const formatDate = (dateStr) => {
-                    if (!dateStr) return "N/D";
-                    const dateParts = dateStr.split('-');
-                    if (dateParts.length === 3) {
-                        return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-                    }
-                    return dateStr;
-                };
-                
-                // Determina classe e icona CSS per lo stato
-                let statusClass = '';
-                let statusIcon = '';
-                
-                if (fattura.stato === 'Pagata') {
-                    statusClass = 'status-pagata';
-                    statusIcon = 'fa-check-circle';
-                } else if (fattura.stato === 'Da Pagare') {
-                    statusClass = 'status-da-pagare';
-                    statusIcon = 'fa-clock';
-                } else if (fattura.stato === 'Scaduta') {
-                    statusClass = 'status-scaduta';
-                    statusIcon = 'fa-exclamation-circle';
-                } else {
-                    statusIcon = 'fa-times-circle';
+            // Formatta date
+            const formatDate = (dateStr) => {
+                if (!dateStr) return "N/D";
+                const dateParts = dateStr.split('-');
+                if (dateParts.length === 3) {
+                    return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
                 }
-                
-                // Crea riga tabella
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${fattura.id}</strong></td>
-                    <td>${condominio ? condominio.nome : 'N/D'}</td>
-                    <td>${fattura.intestatario || 'N/D'}</td>
-                    <td>${formatDate(fattura.dataEmissione)}</td>
-                    <td>${formatDate(fattura.dataScadenza)}</td>
-                    <td><strong>${fattura.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</strong></td>
-                    <td>
-                        <span class="status-badge ${statusClass}">
-                            <i class="fas ${statusIcon}"></i> ${fattura.stato}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button type="button" class="btn-action" title="Invia Email" onclick="openEmailModal('${fattura.id}')">
-                                <i class="fas fa-envelope"></i>
-                            </button>
-                            <button type="button" class="btn-action btn-edit" title="Modifica Stato" onclick="openStatoModal('${fattura.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn-action btn-view" title="Visualizza PDF" onclick="visualizzaPdf('${fattura.id}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+                return dateStr;
+            };
+            
+            // Determina classe e icona CSS per lo stato
+            let statusClass = '';
+            let statusIcon = '';
+            
+            if (fattura.stato === 'Pagata') {
+                statusClass = 'status-pagata';
+                statusIcon = 'fa-check-circle';
+            } else if (fattura.stato === 'Da Pagare') {
+                statusClass = 'status-da-pagare';
+                statusIcon = 'fa-clock';
+            } else if (fattura.stato === 'Scaduta') {
+                statusClass = 'status-scaduta';
+                statusIcon = 'fa-exclamation-circle';
+            } else {
+                statusIcon = 'fa-times-circle';
+            }
+            
+            // Formatta numeri
+            const formatNumber = (num) => {
+                if (num === undefined || num === null) return "0,00";
+                try {
+                    return num.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                } catch (e) {
+                    return "0,00";
+                }
+            };
+            
+            // Crea riga tabella
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${fattura.id || ''}</strong></td>
+                <td>${condominio ? condominio.nome : 'N/D'}</td>
+                <td>${fattura.intestatario || 'N/D'}</td>
+                <td>${formatDate(fattura.dataEmissione)}</td>
+                <td>${formatDate(fattura.dataScadenza)}</td>
+                <td><strong>${formatNumber(fattura.importoTotale)} €</strong></td>
+                <td>
+                    <span class="status-badge ${statusClass}">
+                        <i class="fas ${statusIcon}"></i> ${fattura.stato || 'N/D'}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button type="button" class="btn-action" title="Invia Email" onclick="openEmailModal('${fattura.id}')">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        <button type="button" class="btn-action btn-edit" title="Modifica Stato" onclick="openStatoModal('${fattura.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn-action btn-view" title="Visualizza PDF" onclick="visualizzaPdf('${fattura.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        } catch (error) {
+            console.error(`Errore nel rendering della fattura #${index}:`, error, fattura);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td colspan="8" style="color: red;">
+                    Errore nel rendering della fattura (vedi console per dettagli)
+                </td>
+            `;
+            tbody.appendChild(row);
         }
+    });
+}
         
         /**
          * Apre il modale per l'invio email
          */
         function openEmailModal(fatturaId) {
             const fattura = allFatture.find(f => f.id === fatturaId);
-            if (!fattura) return;
+            if (!fattura) {
+                console.error("Fattura non trovata:", fatturaId);
+                return;
+            }
+            
+            console.log("Apertura modale email per fattura:", fattura);
             
             // Popola il modale
             document.getElementById('modalFatturaId').textContent = fattura.id;
-            document.getElementById('modalIntestatario').textContent = fattura.intestatario;
+            document.getElementById('modalIntestatario').textContent = fattura.intestatario || "N/D";
             document.getElementById('emailFatturaId').value = fattura.id;
             document.getElementById('emailDestinatario').value = fattura.email || '';
-            document.getElementById('emailOggetto').value = `Fattura ${fattura.id} - ${fattura.intestatario}`;
+            document.getElementById('emailOggetto').value = `Fattura ${fattura.id} - ${fattura.intestatario || ""}`;
+            
+            // Formatta date per il messaggio
+            const dataEmissione = fattura.dataEmissione ? formatDate(fattura.dataEmissione) : "N/D";
+            const dataScadenza = fattura.dataScadenza ? formatDate(fattura.dataScadenza) : "N/D";
+            const importoTotale = fattura.importoTotale ? fattura.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "0,00";
             
             // Testo predefinito per l'email
-            const testoPredefinitoEmail = `Gentile ${fattura.intestatario},
+            const testoPredefinitoEmail = `Gentile ${fattura.intestatario || "Cliente"},
 
-In allegato trova la fattura ${fattura.id} relativa al periodo ${formatDate(fattura.dataInizio)} - ${formatDate(fattura.dataFine)}.
+In allegato trova la fattura ${fattura.id} del ${dataEmissione}.
 
-Importo totale: ${fattura.importoTotale.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €
-Scadenza pagamento: ${formatDate(fattura.dataScadenza)}
-Metodo di pagamento: ${fattura.metodoPagamento || 'N/D'}
+Importo totale: ${importoTotale} €
+Scadenza pagamento: ${dataScadenza}
+Metodo di pagamento: ${fattura.metodoPagamento || "Non specificato"}
 
 Per qualsiasi chiarimento, non esiti a contattarci.
 
@@ -1421,6 +1531,10 @@ Cordiali saluti,
 Amministrazione Condominio`;
 
             document.getElementById('emailMessaggio').value = testoPredefinitoEmail;
+            
+            // Reset messaggio di stato e pulsante
+            document.getElementById('emailStatusMsg').style.display = 'none';
+            document.getElementById('sendEmailBtn').disabled = false;
             
             // Mostra il modale
             document.getElementById('emailModal').style.display = 'block';
@@ -1460,6 +1574,10 @@ Amministrazione Condominio`;
             
             document.getElementById('statoFatturaId').value = fattura.id;
             document.getElementById('statoNuovo').value = fattura.stato;
+            
+            // Reset messaggio di stato e pulsante
+            document.getElementById('statoStatusMsg').style.display = 'none';
+            document.getElementById('updateStatusBtn').disabled = false;
             
             // Mostra il modale
             document.getElementById('statoModal').style.display = 'block';
@@ -1506,7 +1624,7 @@ Amministrazione Condominio`;
             // Disabilita pulsante
             document.getElementById('sendEmailBtn').disabled = true;
             
-            // Dati email
+            // Dati email - formattati come richiesto dalla funzione server "inviaFatturaViaEmail"
             const emailData = {
                 fatturaId: fatturaId,
                 destinatario: destinatario,
@@ -1515,12 +1633,60 @@ Amministrazione Condominio`;
                 messaggio: messaggio
             };
             
+            // Invia richiesta alla funzione corretta sul server
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    document.getElementById('sendEmailBtn').disabled = false;
+                    
+                    if (response && response.success) {
+                        showModalStatus('emailStatusMsg', "Email inviata con successo!", "alert-success");
+                        
+                        // Chiudi automaticamente dopo 2 secondi
+                        setTimeout(() => closeModal('emailModal'), 2000);
+                    } else {
+                        showModalStatus('emailStatusMsg', "Errore: " + (response && response.error ? response.error : "Errore nell'invio dell'email"), "alert-danger");
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    document.getElementById('sendEmailBtn').disabled = false;
+                    showModalStatus('emailStatusMsg', "Errore: " + (error && error.message ? error.message : "Errore di comunicazione con il server"), "alert-danger");
+                })
+                .inviaFatturaViaEmail(emailData); // Usa il nome corretto della funzione
+        }
+        
+        /**
+         * Funzione per aggiornare lo stato di una fattura
+         */
+        function aggiornaStatoFattura() {
+            const fatturaId = document.getElementById('statoFatturaId').value;
+            const nuovoStato = document.getElementById('statoNuovo').value;
+            const note = document.getElementById('statoNote').value;
+            
+            // Validazione
+            if (!nuovoStato) {
+                showModalStatus('statoStatusMsg', "Seleziona il nuovo stato della fattura", "alert-danger");
+                return;
+            }
+            
+            // Mostra stato di caricamento
+            showModalStatus('statoStatusMsg', "Aggiornamento stato in corso...", "alert-info");
+            
+            // Disabilita pulsante
+            document.getElementById('updateStatusBtn').disabled = true;
+            
+            // Dati stato
+            const statoData = {
+                fatturaId: fatturaId,
+                stato: nuovoStato,
+                note: note
+            };
+            
             // Invia richiesta al backend
             google.script.run
                 .withSuccessHandler(function(response) {
                     document.getElementById('updateStatusBtn').disabled = false;
                     
-                    if (response.success) {
+                    if (response && response.success) {
                         showModalStatus('statoStatusMsg', "Stato aggiornato con successo!", "alert-success");
                         
                         // Aggiorna la fattura nella lista
@@ -1536,12 +1702,12 @@ Amministrazione Condominio`;
                         // Chiudi automaticamente dopo 2 secondi
                         setTimeout(() => closeModal('statoModal'), 2000);
                     } else {
-                        showModalStatus('statoStatusMsg', "Errore: " + (response.error || "Errore sconosciuto"), "alert-danger");
+                        showModalStatus('statoStatusMsg', "Errore: " + (response && response.error ? response.error : "Errore nell'aggiornamento dello stato"), "alert-danger");
                     }
                 })
                 .withFailureHandler(function(error) {
                     document.getElementById('updateStatusBtn').disabled = false;
-                    showModalStatus('statoStatusMsg', "Errore: " + (error.message || "Errore sconosciuto"), "alert-danger");
+                    showModalStatus('statoStatusMsg', "Errore: " + (error && error.message ? error.message : "Errore di comunicazione con il server"), "alert-danger");
                 })
                 .aggiornaStatoFattura(statoData);
         }
@@ -1550,9 +1716,15 @@ Amministrazione Condominio`;
          * Visualizza il PDF della fattura
          */
         function visualizzaPdf(fatturaId) {
-            // Apri finestra con il PDF
-            const pdfUrl = `<?= getScriptUrl() ?>?view=pdf&id=${fatturaId}`;
-            window.open(pdfUrl, '_blank');
+            try {
+                console.log("Apertura PDF per fattura:", fatturaId);
+                // Costruisci l'URL per la visualizzazione del PDF
+                const pdfUrl = `<?= getScriptUrl() ?>?view=pdf&id=${fatturaId}`;
+                window.open(pdfUrl, '_blank');
+            } catch (error) {
+                console.error("Errore nell'apertura del PDF:", error);
+                alert("Errore nell'apertura del PDF: " + error.message);
+            }
         }
         
         /**
@@ -1687,50 +1859,3 @@ Amministrazione Condominio`;
     </script>
 </body>
 </html>
-            google.script.run
-                .withSuccessHandler(function(response) {
-                    document.getElementById('sendEmailBtn').disabled = false;
-                    
-                    if (response.success) {
-                        showModalStatus('emailStatusMsg', "Email inviata con successo!", "alert-success");
-                        // Chiudi automaticamente dopo 2 secondi
-                        setTimeout(() => closeModal('emailModal'), 2000);
-                    } else {
-                        showModalStatus('emailStatusMsg', "Errore: " + (response.error || "Errore sconosciuto"), "alert-danger");
-                    }
-                })
-                .withFailureHandler(function(error) {
-                    document.getElementById('sendEmailBtn').disabled = false;
-                    showModalStatus('emailStatusMsg', "Errore: " + (error.message || "Errore sconosciuto"), "alert-danger");
-                })
-                .inviaFatturaViaEmail(emailData);
-        }
-        
-        /**
-         * Aggiorna lo stato della fattura
-         */
-        function aggiornaStatoFattura() {
-            const fatturaId = document.getElementById('statoFatturaId').value;
-            const nuovoStato = document.getElementById('statoNuovo').value;
-            const note = document.getElementById('statoNote').value;
-            
-            // Validazione
-            if (!nuovoStato) {
-                showModalStatus('statoStatusMsg', "Seleziona il nuovo stato della fattura", "alert-danger");
-                return;
-            }
-            
-            // Mostra stato di caricamento
-            showModalStatus('statoStatusMsg', "Aggiornamento stato in corso...", "alert-info");
-            
-            // Disabilita pulsante
-            document.getElementById('updateStatusBtn').disabled = true;
-            
-            // Dati per l'aggiornamento
-            const statoData = {
-                fatturaId: fatturaId,
-                stato: nuovoStato,
-                note: note
-            };
-            
-            // Invia richiesta al backend
